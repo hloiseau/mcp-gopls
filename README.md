@@ -49,19 +49,7 @@ go install github.com/hloiseaufcms/mcp-gopls/cmd/mcp-gopls@latest
 
 ## Quick Start
 
-### 1. Run the MCP server
-
-```bash
-mcp-gopls \
-  --workspace /absolute/path/to/your/go/project \
-  --log-level info \
-  --rpc-timeout 60s
-```
-
-- The server logs readiness once `gopls` finishes its initial workspace scan.
-- Use `MCP_GOPLS_*` environment variables to override any flag (e.g., `MCP_GOPLS_WORKSPACE`).
-
-### 2. Connect from Cursor
+### 1. Connect from Cursor
 
 1. Open **Settings → MCP Servers → Edit JSON**.
 2. Add or update the `mcp-gopls` entry:
@@ -83,7 +71,7 @@ mcp-gopls \
 3. Run **Developer: Reload Window** so Cursor reconnects.
 4. Open the **Tools** drawer in Cursor Chat and enable `mcp-gopls`.
 
-### 3. Invoke the tools
+### 2. Invoke the tools
 
 | Tool / Prompt | Example request inside Cursor Chat |
 |---------------|------------------------------------|
