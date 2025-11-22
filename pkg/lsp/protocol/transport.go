@@ -3,6 +3,7 @@ package protocol
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,21 +11,17 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 )
 
 type Transport struct {
-	reader      io.Reader
-	writer      io.Writer
-	readMutex   sync.Mutex
-	writeMutex  sync.Mutex
-	headerBuf   bytes.Buffer
-	contentBuf  bytes.Buffer
-	scannerBuf  bytes.Buffer
-	contentLen  int
-	scannerInit bool
-	closed      bool
-	closeMutex  sync.Mutex
+	reader     io.Reader
+	writer     io.Writer
+	readMutex  sync.Mutex
+	writeMutex sync.Mutex
+	headerBuf  bytes.Buffer
+	contentLen int
+	closed     bool
+	closeMutex sync.Mutex
 }
 
 func NewTransport(reader io.Reader, writer io.Writer) *Transport {
@@ -87,7 +84,32 @@ func (t *Transport) SendMessage(msg *JSONRPCMessage) error {
 	return nil
 }
 
-func (t *Transport) ReceiveMessage() (*JSONRPCMessage, error) {
+func (t *Transport) ReceiveMessage(ctx context.Context) (*JSONRPCMessage, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	type result struct {
+		msg *JSONRPCMessage
+		err error
+	}
+
+	resultCh := make(chan result, 1)
+
+	go func() {
+		msg, err := t.receiveNext()
+		resultCh <- result{msg: msg, err: err}
+	}()
+
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case res := <-resultCh:
+		return res.msg, res.err
+	}
+}
+
+func (t *Transport) receiveNext() (*JSONRPCMessage, error) {
 	t.readMutex.Lock()
 	defer t.readMutex.Unlock()
 
@@ -95,86 +117,41 @@ func (t *Transport) ReceiveMessage() (*JSONRPCMessage, error) {
 		return nil, fmt.Errorf("transport closed")
 	}
 
-	timeoutDuration := 30 * time.Second
-	resultCh := make(chan struct {
-		msg *JSONRPCMessage
-		err error
-	}, 1)
-
-	go func() {
-		for {
-			contentLength, err := t.readHeader()
-			if err != nil {
-				if err == io.EOF || strings.Contains(err.Error(), "pipe") || strings.Contains(err.Error(), "connection") {
-					t.Close()
-					resultCh <- struct {
-						msg *JSONRPCMessage
-						err error
-					}{nil, fmt.Errorf("error reading header (transport closed): %w", err)}
-					return
-				}
-				resultCh <- struct {
-					msg *JSONRPCMessage
-					err error
-				}{nil, fmt.Errorf("error reading header: %w", err)}
-				return
-			}
-
-			content, err := t.readContent(contentLength)
-			if err != nil {
-				if err == io.EOF || strings.Contains(err.Error(), "pipe") || strings.Contains(err.Error(), "connection") {
-					t.Close()
-					resultCh <- struct {
-						msg *JSONRPCMessage
-						err error
-					}{nil, fmt.Errorf("error reading content (transport closed): %w", err)}
-					return
-				}
-				resultCh <- struct {
-					msg *JSONRPCMessage
-					err error
-				}{nil, fmt.Errorf("error reading content: %w", err)}
-				return
-			}
-
-			var msg JSONRPCMessage
-			if err := json.Unmarshal(content, &msg); err != nil {
-				resultCh <- struct {
-					msg *JSONRPCMessage
-					err error
-				}{nil, fmt.Errorf("error deserializing JSON-RPC message: %w", err)}
-				return
-			}
-
-			messageType := "response"
-			if msg.ID == nil {
-				messageType = "notification"
-			}
-			log.Printf("📥 %s message received: %s", messageType, string(content))
-
-			if msg.ID == nil {
-				log.Printf("⏭️ Ignoring notification: %s", msg.Method)
-				continue
-			}
-
-			resultCh <- struct {
-				msg *JSONRPCMessage
-				err error
-			}{&msg, nil}
-			return
+	contentLength, err := t.readHeader()
+	if err != nil {
+		if err == io.EOF || strings.Contains(err.Error(), "pipe") || strings.Contains(err.Error(), "connection") {
+			t.Close()
+			return nil, fmt.Errorf("error reading header (transport closed): %w", err)
 		}
-	}()
-
-	select {
-	case result := <-resultCh:
-		return result.msg, result.err
-	case <-time.After(timeoutDuration):
-		return nil, fmt.Errorf("timeout: no response received after %v seconds", timeoutDuration.Seconds())
+		return nil, fmt.Errorf("error reading header: %w", err)
 	}
+
+	content, err := t.readContent(contentLength)
+	if err != nil {
+		if err == io.EOF || strings.Contains(err.Error(), "pipe") || strings.Contains(err.Error(), "connection") {
+			t.Close()
+			return nil, fmt.Errorf("error reading content (transport closed): %w", err)
+		}
+		return nil, fmt.Errorf("error reading content: %w", err)
+	}
+
+	var msg JSONRPCMessage
+	if err := json.Unmarshal(content, &msg); err != nil {
+		return nil, fmt.Errorf("error deserializing JSON-RPC message: %w", err)
+	}
+
+	messageType := "response"
+	if msg.ID == nil {
+		messageType = "notification"
+	}
+	log.Printf("📥 %s message received: %s", messageType, string(content))
+
+	return &msg, nil
 }
 
 func (t *Transport) readHeader() (int, error) {
 	t.headerBuf.Reset()
+	t.contentLen = 0
 	s, ok := t.reader.(*bufio.Reader)
 	if !ok {
 		s = bufio.NewReader(t.reader)

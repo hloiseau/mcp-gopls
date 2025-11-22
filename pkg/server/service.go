@@ -1,26 +1,34 @@
 package server
 
-// This file provides the expected API for main.go by acting as an
-// adapter to the implementations in server.go
+import (
+	"context"
+	"fmt"
+)
 
-// NewService creates a new MCP service for gopls integration
-func NewService() (*Service, error) {
-	logFile, err := setupLogger()
+// NewService creates a fully configured MCP service ready to serve requests.
+func NewService(cfg Config) (*Service, error) {
+	if err := cfg.Normalize(); err != nil {
+		return nil, err
+	}
+
+	logFile, logger, err := setupLogger(cfg)
 	if err != nil {
 		return nil, err
 	}
 
 	svc := &Service{
+		config:  cfg,
+		logger:  logger,
 		logFile: logFile,
 	}
 
-	if err := svc.initLSPClient(); err != nil {
-		if logFile != nil {
-			logFile.Close()
-		}
-		return nil, err
+	if err := svc.initLSPClient(context.Background()); err != nil {
+		svc.cleanup(context.Background())
+		return nil, fmt.Errorf("bootstrap lsp client: %w", err)
 	}
 
-	svc.server = setupServer()
+	svc.server = setupServer(cfg, logger)
+	svc.registerResources()
+	svc.registerPrompts()
 	return svc, nil
 }
