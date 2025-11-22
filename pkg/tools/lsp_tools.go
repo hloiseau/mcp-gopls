@@ -419,3 +419,47 @@ func splitPathEntries(pathValue string) []string {
 	}
 	return strings.Split(pathValue, string(os.PathListSeparator))
 }
+
+func (t *LSPTools) commandFailureResult(action string, result commandResult, err error) (*mcp.CallToolResult, error) {
+	message := buildCommandErrorMessage(action, result, err)
+	return mcp.NewToolResultError(message), nil
+}
+
+func buildCommandErrorMessage(action string, result commandResult, err error) string {
+	var builder strings.Builder
+
+	name := strings.TrimSpace(action)
+	if name == "" {
+		name = strings.Join(result.Command, " ")
+		name = strings.TrimSpace(name)
+	}
+	if name == "" {
+		name = "command"
+	}
+
+	builder.WriteString(fmt.Sprintf("%s failed", name))
+	if result.ExitCode != 0 {
+		builder.WriteString(fmt.Sprintf(" (exit code %d)", result.ExitCode))
+	}
+	if err != nil {
+		builder.WriteString(fmt.Sprintf(": %v", err))
+	}
+
+	if stderr := strings.TrimSpace(result.Stderr); stderr != "" {
+		builder.WriteString("\nstderr:\n")
+		builder.WriteString(limitOutputLines(stderr, 20))
+	}
+	return builder.String()
+}
+
+func limitOutputLines(output string, max int) string {
+	if max <= 0 {
+		return output
+	}
+	lines := strings.Split(output, "\n")
+	if len(lines) <= max {
+		return output
+	}
+	truncated := append([]string{"... (stderr truncated) ..."}, lines[len(lines)-max:]...)
+	return strings.Join(truncated, "\n")
+}

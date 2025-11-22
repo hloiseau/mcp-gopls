@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"strings"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
@@ -69,8 +70,8 @@ func (t *LSPTools) registerGoModTidy(s *server.MCPServer) {
 		token := getProgressToken(request.Params.Meta)
 		sendProgressNotification(ctx, s, token, "Running go mod tidy")
 		result, err := t.runCommand(ctx, s, token, "go", "mod", "tidy")
-		if err != nil && !isExitSuccess(err) {
-			return mcp.NewToolResultErrorFromErr("go mod tidy failed", err), nil
+		if err != nil {
+			return t.commandFailureResult("go mod tidy", result, err)
 		}
 
 		payload := map[string]any{"result": result}
@@ -105,9 +106,7 @@ func (t *LSPTools) registerGovulncheck(s *server.MCPServer) {
 			if errors.Is(err, context.DeadlineExceeded) {
 				return mcp.NewToolResultError("govulncheck timed out"), nil
 			}
-			if !isExitSuccess(err) {
-				return mcp.NewToolResultErrorFromErr("govulncheck failed", err), nil
-			}
+			return t.commandFailureResult(strings.Join(result.Command, " "), result, err)
 		}
 
 		payload := map[string]any{"result": result}
@@ -137,8 +136,8 @@ func (t *LSPTools) registerModuleGraph(s *server.MCPServer) {
 		// Disable per-line progress streaming here to avoid overwhelming clients
 		// with thousands of dependency lines (they remain in the tool result).
 		result, err := t.runCommand(ctx, s, nil, "go", "mod", "graph")
-		if err != nil && !isExitSuccess(err) {
-			return mcp.NewToolResultErrorFromErr("go mod graph failed", err), nil
+		if err != nil {
+			return t.commandFailureResult("go mod graph", result, err)
 		}
 
 		payload := map[string]any{

@@ -2,10 +2,8 @@ package tools
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/mark3labs/mcp-go/mcp"
@@ -55,7 +53,11 @@ func (t *LSPTools) registerCoverageAnalysis(s *server.MCPServer) {
 			sendProgressNotification(ctx, s, token, fmt.Sprintf("Running go test with coverage for %s", packagePath))
 			result, err := t.runCoverageByFunction(ctx, s, token, packagePath)
 			if err != nil {
-				return mcp.NewToolResultErrorFromErr("coverage analysis failed", err), nil
+				failing := result.test
+				if result.cover != nil {
+					failing = *result.cover
+				}
+				return t.commandFailureResult("coverage analysis", failing, err)
 			}
 			payload["test"] = result.test
 			if result.cover != nil {
@@ -65,8 +67,8 @@ func (t *LSPTools) registerCoverageAnalysis(s *server.MCPServer) {
 		} else {
 			sendProgressNotification(ctx, s, token, fmt.Sprintf("Running go test -cover for %s", packagePath))
 			testResult, err := t.runCommand(ctx, s, token, "go", "test", packagePath, "-cover")
-			if err != nil && !isExitSuccess(err) {
-				return mcp.NewToolResultErrorFromErr("go test failed", err), nil
+			if err != nil {
+				return t.commandFailureResult("go test -cover", testResult, err)
 			}
 			payload["test"] = testResult
 		}
@@ -93,13 +95,13 @@ func (t *LSPTools) runCoverageByFunction(ctx context.Context, srv *server.MCPSer
 	_ = tempFile.Close()
 
 	testResult, err := t.runCommand(ctx, srv, token, "go", "test", target, "-coverprofile", tempFile.Name())
-	if err != nil && !isExitSuccess(err) {
+	if err != nil {
 		return coverageCommandResult{test: testResult}, err
 	}
 
 	coverResult, coverErr := t.runCommand(ctx, srv, token, "go", "tool", "cover", "-func", tempFile.Name())
-	if coverErr != nil && !isExitSuccess(coverErr) {
-		return coverageCommandResult{test: testResult}, coverErr
+	if coverErr != nil {
+		return coverageCommandResult{test: testResult, cover: &coverResult}, coverErr
 	}
 
 	return coverageCommandResult{
@@ -128,8 +130,8 @@ func (t *LSPTools) registerGoTest(s *server.MCPServer) {
 
 		sendProgressNotification(ctx, s, token, fmt.Sprintf("Running go test for %s", target))
 		result, err := t.runCommand(ctx, s, token, "go", "test", target)
-		if err != nil && !isExitSuccess(err) {
-			return mcp.NewToolResultErrorFromErr("go test failed", err), nil
+		if err != nil {
+			return t.commandFailureResult("go test", result, err)
 		}
 
 		payload := map[string]any{
@@ -143,11 +145,6 @@ func (t *LSPTools) registerGoTest(s *server.MCPServer) {
 		}
 		return toolResult, nil
 	})
-}
-
-func isExitSuccess(err error) bool {
-	var exitErr *exec.ExitError
-	return errors.As(err, &exitErr)
 }
 
 func normalizePackageTarget(workspaceDir, requested string) string {
