@@ -1,28 +1,41 @@
 package client
 
 import (
+	"context"
+
 	"github.com/hloiseaufcms/mcp-gopls/pkg/lsp/protocol"
 )
 
-// LSPClient définit l'interface pour un client LSP
+// DiagnosticsHandler is invoked whenever gopls publishes diagnostics.
+type DiagnosticsHandler func(protocol.PublishDiagnosticsParams)
+
+// LSPClient définit l'interface pour un client LSP.
 type LSPClient interface {
 	// Méthodes de base du protocole
-	Initialize() error
-	Shutdown() error
-	Close() error
+	Initialize(ctx context.Context) error
+	Shutdown(ctx context.Context) error
+	Close(ctx context.Context) error
 
 	// Méthodes de navigation de code
-	GoToDefinition(uri string, line, character int) ([]protocol.Location, error)
-	FindReferences(uri string, line, character int, includeDeclaration bool) ([]protocol.Location, error)
+	GoToDefinition(ctx context.Context, uri string, line, character int) ([]protocol.Location, error)
+	FindReferences(ctx context.Context, uri string, line, character int, includeDeclaration bool) ([]protocol.Location, error)
 
 	// Méthodes de diagnostic
-	GetDiagnostics(uri string) ([]protocol.Diagnostic, error)
+	GetDiagnostics(ctx context.Context, uri string) ([]protocol.Diagnostic, error)
 
 	// Méthodes de document
-	DidOpen(uri, languageID, text string) error
-	DidClose(uri string) error
+	DidOpen(ctx context.Context, uri, languageID, text string) error
+	DidClose(ctx context.Context, uri string) error
 
 	// Support avancé
-	GetHover(uri string, line, character int) (string, error)
-	GetCompletion(uri string, line, character int) ([]string, error)
+	GetHover(ctx context.Context, uri string, line, character int) (string, error)
+	GetCompletion(ctx context.Context, uri string, line, character int) ([]string, error)
+
+	DocumentFormatting(ctx context.Context, uri string) ([]protocol.TextEdit, error)
+	Rename(ctx context.Context, uri string, line, character int, newName string) (*protocol.WorkspaceEdit, error)
+	CodeActions(ctx context.Context, uri string, rng protocol.Range) ([]protocol.CodeAction, error)
+	WorkspaceSymbols(ctx context.Context, query string) ([]protocol.SymbolInformation, error)
+
+	// Observability
+	OnDiagnostics(handler DiagnosticsHandler) func()
 }

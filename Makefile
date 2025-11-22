@@ -1,28 +1,58 @@
-.PHONY: build clean test
+.PHONY: all build clean test coverage deps fmt fmt-check lint vet tidy tidy-check verify
 
-# Variables
 BINARY_NAME=mcp-gopls
 GO=go
 GOFLAGS=-v
 LDFLAGS=-ldflags="-s -w"
+GO_FILES := $(shell find . -name '*.go' -not -path "./vendor/*" -not -path "./.git/*")
 
-# Build the project
+all: deps build
+
 build:
 	$(GO) build $(GOFLAGS) $(LDFLAGS) -o $(BINARY_NAME) ./cmd/...
 
-# Clean build artifacts
 clean:
 	$(GO) clean
 	rm -f $(BINARY_NAME)
 
-# Run tests
 test:
 	$(GO) test -v ./...
 
-# Install dependencies
+coverage:
+	$(GO) test ./... -coverprofile=coverage.out
+	$(GO) tool cover -func=coverage.out > coverage.txt
+	@echo "Coverage profiles written to coverage.out and coverage.txt"
+
 deps:
 	$(GO) mod download
 	$(GO) mod tidy
 
-# Default target
-all: deps build 
+fmt:
+	gofmt -w $(GO_FILES)
+	goimports -w $(GO_FILES)
+
+fmt-check:
+	@files=$$(gofmt -l $(GO_FILES)); if [ -n "$$files" ]; then \
+		echo "gofmt would reformat:"; \
+		echo "$$files"; \
+		exit 1; \
+	fi
+	@imports=$$(goimports -l $(GO_FILES)); if [ -n "$$imports" ]; then \
+		echo "goimports would reformat:"; \
+		echo "$$imports"; \
+		exit 1; \
+	fi
+
+lint:
+	golangci-lint run ./...
+
+vet:
+	$(GO) vet ./...
+
+tidy:
+	$(GO) mod tidy
+
+tidy-check:
+	bash scripts/tidy-check.sh
+
+verify: fmt-check vet lint tidy-check test
