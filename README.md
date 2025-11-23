@@ -1,6 +1,14 @@
-# MCP LSP Go
+# mcp-gopls – MCP server for Go (gopls)
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+![Go version](https://img.shields.io/badge/Go-1.25+-informational)
+[![CI](https://github.com/hloiseau/mcp-gopls/actions/workflows/ci.yml/badge.svg)](https://github.com/hloiseau/mcp-gopls/actions)
 
-A Model Context Protocol (MCP) server that allows AI assistants like Claude to interact with Go's Language Server Protocol (LSP) and benefit from advanced Go code analysis features.
+A Model Context Protocol (MCP) server that lets AI assistants use Go’s LSP (`gopls`) for navigation, diagnostics, testing, coverage, and more.
+
+> **TL;DR:** If you use Claude / Cursor / Copilot with Go, `mcp-gopls` gives the AI full LSP powers:
+> go-to-definition, references, hover, completion, `go test`, coverage, `go mod tidy`, `govulncheck`, etc.
+
+
 
 ## Overview
 
@@ -46,6 +54,7 @@ The server communicates with [gopls](https://github.com/golang/tools/tree/master
 ```bash
 go install github.com/hloiseaufcms/mcp-gopls/cmd/mcp-gopls@latest
 ```
+>Note: the Go module path is github.com/hloiseaufcms/mcp-gopls, even though the GitHub repo is under hloiseau.
 
 ## Quick Start
 
