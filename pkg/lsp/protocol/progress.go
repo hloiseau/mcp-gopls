@@ -60,4 +60,3 @@ func ParseProgressNotification(msg *JSONRPCMessage) (ProgressNotification, error
 	}
 	return payload, nil
 }
-
