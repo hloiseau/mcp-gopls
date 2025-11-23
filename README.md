@@ -8,6 +8,7 @@ A Model Context Protocol (MCP) server that lets AI assistants use Go’s LSP (`g
 > **TL;DR:** If you use Claude / Cursor / Copilot with Go, `mcp-gopls` gives the AI full LSP powers:
 > go-to-definition, references, hover, completion, `go test`, coverage, `go mod tidy`, `govulncheck`, etc.
 
+![Demo Animation](docs/Animation.gif)
 
 
 ## Overview
@@ -19,6 +20,9 @@ This MCP server helps AI assistants to:
 - Format, rename, and inspect code actions without leaving MCP
 - Run Go tests, coverage, `go mod tidy`, `govulncheck`, and module graph commands with structured results
 - Read workspace resources (overview + go.mod) and consume curated prompts
+
+> **Status:** Actively developed – used in real projects.  
+> Tested with Go 1.25.x and `gopls@latest`.  
 
 ## Architecture
 
@@ -57,6 +61,28 @@ go install github.com/hloiseaufcms/mcp-gopls/cmd/mcp-gopls@latest
 >Note: the Go module path is github.com/hloiseaufcms/mcp-gopls, even though the GitHub repo is under hloiseau.
 
 ## Quick Start
+
+1. **Install** the server:
+
+```bash
+go install github.com/hloiseaufcms/mcp-gopls/cmd/mcp-gopls@latest
+```
+
+2. **Verify** it's on your `$PATH`:
+
+```bash
+mcp-gopls --help
+```
+
+3. **Configure** your AI client (see examples below for Cursor, Claude Desktop, or GitHub Copilot).
+
+---
+
+## Detailed Client Setup
+
+> **Note:** All clients point to the same command:  
+> `mcp-gopls --workspace /absolute/path/to/your/go/project`  
+> The configuration format differs slightly per client, but the binary and arguments remain identical.
 
 ### 1. Connect from Cursor
 
@@ -242,6 +268,34 @@ Both prompts are accessible from any MCP-aware client via the “Prompts” cata
 
 The prompt responds with a numbered set of refactor steps plus suggested validation commands (`go test`, `analyze_coverage`, etc.).
 
+## Configuration
+
+The server supports various configuration options via command-line flags and environment variables:
+
+### Command-Line Flags
+
+| Flag                  | Default | Description                                    |
+|-----------------------|---------|------------------------------------------------|
+| `--workspace`         | `.`     | Absolute path to your Go project root          |
+| `--gopls-path`        | `gopls` | Path to the gopls binary                       |
+| `--log-level`         | `info`  | Log level (`debug`, `info`, `warn`, `error`)   |
+| `--rpc-timeout`       | `30s`   | RPC timeout for LSP calls                      |
+| `--shutdown-timeout`  | `5s`    | Timeout for graceful shutdown                  |
+
+### Environment Variables
+
+All flags can be set via environment variables with the `MCP_GOPLS_` prefix:
+
+| Environment Variable       | Equivalent Flag       | Description                                    |
+|---------------------------|-----------------------|------------------------------------------------|
+| `MCP_GOPLS_WORKSPACE`     | `--workspace`         | Absolute path to your Go project root          |
+| `MCP_GOPLS_GOPLS_PATH`    | `--gopls-path`        | Path to the gopls binary                       |
+| `MCP_GOPLS_LOG_LEVEL`     | `--log-level`         | Log level (`debug`, `info`, `warn`, `error`)   |
+| `MCP_GOPLS_RPC_TIMEOUT`   | `--rpc-timeout`       | RPC timeout for LSP calls (e.g., `30s`, `1m`)  |
+| `MCP_GOPLS_SHUTDOWN_TIMEOUT` | `--shutdown-timeout` | Timeout for graceful shutdown                |
+
+Command-line flags take precedence over environment variables.
+
 ## Troubleshooting
 
 - **“column is beyond end of line”** – gopls could not map the provided position. Confirm the file is saved and the position uses zero-based lines/columns; run `go fmt` to ensure tabs vs. spaces align with gopls expectations.
@@ -281,6 +335,16 @@ Table-driven tests live under `pkg/tools` and CI runs via `.github/workflows/ci.
 - `docs/usage.md` – quickstart and tool catalog walkthrough
 - Workspace resources expose `resource://workspace/overview` and `resource://workspace/go.mod`
 - Prompts (`summarize_diagnostics`, `refactor_plan`) help assistants produce consistent outputs
+
+## Contributing
+
+PRs and issues are welcome!
+
+- Check [open issues](https://github.com/hloiseau/mcp-gopls/issues) or file a new one if you hit a bug or want a feature.
+- Run `go test ./...` before opening a PR.
+- For bigger changes (new tools, protocol changes), please open a design issue first so we can discuss the approach.
+
+All contributions should maintain test coverage and adhere to Go best practices. See the [Development](#development) section for setup instructions.
 
 ## Prerequisites
 

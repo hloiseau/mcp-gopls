@@ -16,3 +16,4 @@
 - **Coverage fallback** – `analyze_coverage` always returns aggregate results even when per-function parsing fails, so release artifacts never miss coverage numbers.
 - **Transport robustness** – the JSON-RPC transport reads exactly one message per call and closes cleanly on pipe errors; the gopls client now discovers `GOROOT` via `go env` to avoid stale runtime paths.
 
+

@@ -54,3 +54,4 @@ func TestDetermineGovulncheckCommandFallback(t *testing.T) {
 		}
 	}
 }
+
