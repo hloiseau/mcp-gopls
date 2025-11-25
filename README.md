@@ -39,6 +39,41 @@ The server communicates with [gopls](https://github.com/golang/tools/tree/master
 - **MCP extras**: resources (`resource://workspace/overview`, `resource://workspace/go.mod`) and prompts (`summarize_diagnostics`, `refactor_plan`)
 - **Progress streaming**: long-running commands emit `notifications/progress` events so clients can surface status updates
 
+### Feature comparison: `mcp-gopls` vs built-in `gopls` MCP
+
+As of `gopls` v0.20.0, the built-in MCP server exposes these tools:
+`go_context`, `go_diagnostics`, `go_file_context`, `go_file_diagnostics`,
+`go_file_metadata`, `go_package_api`, `go_references`, `go_rename_symbol`,
+`go_search`, `go_symbol_references`, `go_workspace`, `go_vulncheck`.
+
+| Feature / capability | `mcp-gopls` (this project) | Built-in `gopls` MCP |
+|----------------------|----------------------------|----------------------|
+| Go-to-definition | Yes (`go_to_definition` tool) | No dedicated MCP tool (not in tool list) |
+| Find references | Yes (`find_references`) | Yes (`go_references`, `go_symbol_references`) |
+| Diagnostics (file / workspace) | Yes (`check_diagnostics`) | Yes (`go_diagnostics`, `go_file_diagnostics`) |
+| Hover information | Yes (`get_hover_info`) | No dedicated MCP tool (not in tool list) |
+| Completion | Yes (`get_completion`) | No dedicated MCP tool (not in tool list) |
+| Formatting | Yes (`format_document`) | No dedicated MCP tool (not in tool list) |
+| Rename symbol | Yes (`rename_symbol`) | Yes (`go_rename_symbol`) |
+| Code actions | Yes (`list_code_actions`) | No dedicated MCP tool (not in tool list) |
+| Workspace symbol search | Yes (`search_workspace_symbols`) | Yes (`go_search`) |
+| Package / workspace API/context tools | No dedicated MCP tool | Yes (`go_package_api`, `go_file_context`, `go_file_metadata`, `go_workspace`, `go_context`) |
+| Run `go test` | Yes (`run_go_test`) | No MCP tool for running tests |
+| Coverage analysis | Yes (`analyze_coverage`) | No MCP tool for coverage |
+| `go mod tidy` | Yes (`run_go_mod_tidy`) | No MCP tool for `go mod tidy` |
+| `govulncheck` | Yes (`run_govulncheck`) | Yes (`go_vulncheck`) |
+| Module graph (`go mod graph`) | Yes (`module_graph`) | No MCP tool for module graph |
+| Extra MCP resources | Yes (`resource://workspace/overview`, `resource://workspace/go.mod`) | Not documented as MCP resources |
+| Custom MCP prompts | Yes (`summarize_diagnostics`, `refactor_plan`) | Not exposed as MCP prompts (only model instructions) |
+| Model instructions shipped with server | No special mechanism (documented in README/docs) | Yes: `gopls mcp -instructions` prints usage workflows |
+
+If you want full LSP-like editing + tooling from MCP (definition, hover, completion, format, rename, code actions, go test, coverage, go mod tidy, module graph), mcp-gopls is strictly richer.
+
+If you mostly want read-only/introspective tools (diagnostics, symbol search, references, package API, workspace/file context, vulncheck) with no extra binary, the built-in gopls MCP is enough.
+
+> **Note:** The built-in `gopls` MCP server is still marked experimental and its tool set may change over time. This comparison is accurate as of `gopls` v0.20.x.
+
+
 ## Project Structure
 
 ```bash
