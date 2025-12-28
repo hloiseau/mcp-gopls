@@ -16,6 +16,8 @@ func (t *LSPTools) registerDiagnosticsTools(s *server.MCPServer) {
 func (t *LSPTools) registerCheckDiagnostics(s *server.MCPServer) {
 	diagnosticsTool := mcp.NewTool("check_diagnostics",
 		mcp.WithDescription("Get diagnostics for a file"),
+		mcp.WithTitleAnnotation("Check Diagnostics"),
+		mcp.WithReadOnlyHintAnnotation(true),
 		mcp.WithString("file_uri",
 			mcp.Required(),
 			mcp.Description("URI of the file"),

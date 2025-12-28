@@ -17,6 +17,8 @@ func (t *LSPTools) registerNavigationTools(s *server.MCPServer) {
 func (t *LSPTools) registerGoToDefinition(s *server.MCPServer) {
 	definitionTool := mcp.NewTool("go_to_definition",
 		mcp.WithDescription("Navigate to the definition of a symbol"),
+		mcp.WithTitleAnnotation("Go To Definition"),
+		mcp.WithReadOnlyHintAnnotation(true),
 		mcp.WithString("file_uri",
 			mcp.Required(),
 			mcp.Description("URI of the file"),
@@ -72,6 +74,8 @@ func (t *LSPTools) registerGoToDefinition(s *server.MCPServer) {
 func (t *LSPTools) registerFindReferences(s *server.MCPServer) {
 	referencesTool := mcp.NewTool("find_references",
 		mcp.WithDescription("Find all references to a symbol"),
+		mcp.WithTitleAnnotation("Find References"),
+		mcp.WithReadOnlyHintAnnotation(true),
 		mcp.WithString("file_uri",
 			mcp.Required(),
 			mcp.Description("URI of the file"),

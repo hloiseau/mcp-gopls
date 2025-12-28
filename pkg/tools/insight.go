@@ -17,6 +17,8 @@ func (t *LSPTools) registerInsightTools(s *server.MCPServer) {
 func (t *LSPTools) registerHover(s *server.MCPServer) {
 	hoverTool := mcp.NewTool("get_hover_info",
 		mcp.WithDescription("Get hover information for a symbol"),
+		mcp.WithTitleAnnotation("Get Hover Info"),
+		mcp.WithReadOnlyHintAnnotation(true),
 		mcp.WithString("file_uri",
 			mcp.Required(),
 			mcp.Description("URI of the file"),
@@ -74,6 +76,8 @@ func (t *LSPTools) registerHover(s *server.MCPServer) {
 func (t *LSPTools) registerCompletion(s *server.MCPServer) {
 	completionTool := mcp.NewTool("get_completion",
 		mcp.WithDescription("Get completion suggestions at a position"),
+		mcp.WithTitleAnnotation("Get Completion"),
+		mcp.WithReadOnlyHintAnnotation(true),
 		mcp.WithString("file_uri",
 			mcp.Required(),
 			mcp.Description("URI of the file"),

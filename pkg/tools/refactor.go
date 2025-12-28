@@ -18,6 +18,8 @@ func (t *LSPTools) registerRefactorTools(s *server.MCPServer) {
 func (t *LSPTools) registerFormatDocument(s *server.MCPServer) {
 	tool := mcp.NewTool("format_document",
 		mcp.WithDescription("Return formatting edits for a Go file"),
+		mcp.WithTitleAnnotation("Format Document"),
+		mcp.WithReadOnlyHintAnnotation(true),
 		mcp.WithString("file_uri",
 			mcp.Required(),
 			mcp.Description("URI of the file to format"),
@@ -63,6 +65,8 @@ func (t *LSPTools) registerFormatDocument(s *server.MCPServer) {
 func (t *LSPTools) registerRenameSymbol(s *server.MCPServer) {
 	tool := mcp.NewTool("rename_symbol",
 		mcp.WithDescription("Compute rename edits for a symbol"),
+		mcp.WithTitleAnnotation("Rename Symbol"),
+		mcp.WithReadOnlyHintAnnotation(true),
 		mcp.WithString("file_uri",
 			mcp.Required(),
 			mcp.Description("URI of the file"),
@@ -128,6 +132,8 @@ func (t *LSPTools) registerRenameSymbol(s *server.MCPServer) {
 func (t *LSPTools) registerCodeActionsTool(s *server.MCPServer) {
 	tool := mcp.NewTool("list_code_actions",
 		mcp.WithDescription("List available code actions for a given range"),
+		mcp.WithTitleAnnotation("List Code Actions"),
+		mcp.WithReadOnlyHintAnnotation(true),
 		mcp.WithString("file_uri",
 			mcp.Required(),
 			mcp.Description("URI of the file"),

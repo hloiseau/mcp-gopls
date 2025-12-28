@@ -18,6 +18,8 @@ func (t *LSPTools) registerTestingTools(s *server.MCPServer) {
 func (t *LSPTools) registerCoverageAnalysis(s *server.MCPServer) {
 	coverageTool := mcp.NewTool("analyze_coverage",
 		mcp.WithDescription("Analyze test coverage for Go code"),
+		mcp.WithTitleAnnotation("Analyze Coverage"),
+		mcp.WithReadOnlyHintAnnotation(true),
 		mcp.WithString("path",
 			mcp.Description("Path to the package or directory to analyze. Defaults to ./..."),
 		),
@@ -113,6 +115,8 @@ func (t *LSPTools) runCoverageByFunction(ctx context.Context, srv *server.MCPSer
 func (t *LSPTools) registerGoTest(s *server.MCPServer) {
 	runTool := mcp.NewTool("run_go_test",
 		mcp.WithDescription("Run go test for a package or pattern"),
+		mcp.WithTitleAnnotation("Run Go Test"),
+		mcp.WithReadOnlyHintAnnotation(true),
 		mcp.WithString("path",
 			mcp.Description("Package path or pattern. Defaults to ./..."),
 		),
