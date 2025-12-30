@@ -23,6 +23,8 @@ func (t *LSPTools) registerWorkspaceTools(s *server.MCPServer) {
 func (t *LSPTools) registerWorkspaceSymbols(s *server.MCPServer) {
 	tool := mcp.NewTool("search_workspace_symbols",
 		mcp.WithDescription("Search workspace symbols via LSP"),
+		mcp.WithTitleAnnotation("Search Workspace Symbols"),
+		mcp.WithReadOnlyHintAnnotation(true),
 		mcp.WithString("query",
 			mcp.Required(),
 			mcp.Description("Search query"),
@@ -64,6 +66,8 @@ func (t *LSPTools) registerWorkspaceSymbols(s *server.MCPServer) {
 func (t *LSPTools) registerGoModTidy(s *server.MCPServer) {
 	tool := mcp.NewTool("run_go_mod_tidy",
 		mcp.WithDescription("Execute go mod tidy in the workspace"),
+		mcp.WithTitleAnnotation("Run Go Mod Tidy"),
+		mcp.WithDestructiveHintAnnotation(true),
 	)
 
 	s.AddTool(tool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -86,6 +90,8 @@ func (t *LSPTools) registerGoModTidy(s *server.MCPServer) {
 func (t *LSPTools) registerGovulncheck(s *server.MCPServer) {
 	tool := mcp.NewTool("run_govulncheck",
 		mcp.WithDescription("Execute govulncheck ./... in the workspace"),
+		mcp.WithTitleAnnotation("Run Govulncheck"),
+		mcp.WithReadOnlyHintAnnotation(true),
 	)
 
 	s.AddTool(tool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -128,6 +134,8 @@ func determineGovulncheckCommand() (string, []string, bool) {
 func (t *LSPTools) registerModuleGraph(s *server.MCPServer) {
 	tool := mcp.NewTool("module_graph",
 		mcp.WithDescription("Return the Go module dependency graph"),
+		mcp.WithTitleAnnotation("Module Graph"),
+		mcp.WithReadOnlyHintAnnotation(true),
 	)
 
 	s.AddTool(tool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
