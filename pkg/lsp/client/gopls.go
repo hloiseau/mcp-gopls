@@ -597,12 +597,14 @@ func (c *GoplsClient) removeDiagnosticsWaiter(uri string, target chan struct{}) 
 
 // GetDiagnostics returns the cached diagnostics for the provided URI.
 func (c *GoplsClient) GetDiagnostics(ctx context.Context, uri string) ([]protocol.Diagnostic, error) {
-	opened, err := c.ensureDocumentOpen(ctx, uri, "go", "")
+	opened, err := c.ensureDocumentOpen(uri, "go", "")
 	if err != nil {
 		return nil, err
 	}
 	if opened {
-		defer c.DidClose(ctx, uri)
+		defer func() {
+			_ = c.DidClose(ctx, uri)
+		}()
 	}
 
 	if err := c.waitForDiagnostics(ctx, uri); err != nil {
@@ -620,15 +622,11 @@ func (c *GoplsClient) GetDiagnostics(ctx context.Context, uri string) ([]protoco
 
 // DidOpen sends a textDocument/didOpen notification (idempotent).
 func (c *GoplsClient) DidOpen(ctx context.Context, uri, languageID, text string) error {
-	_, err := c.ensureDocumentOpen(ctx, uri, languageID, text)
+	_, err := c.ensureDocumentOpen(uri, languageID, text)
 	return err
 }
 
-func (c *GoplsClient) ensureDocumentOpen(ctx context.Context, uri, languageID, text string) (bool, error) {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
+func (c *GoplsClient) ensureDocumentOpen(uri, languageID, text string) (bool, error) {
 	if uri == "" {
 		return false, errors.New("uri is required")
 	}
@@ -680,12 +678,14 @@ func (c *GoplsClient) DidClose(ctx context.Context, uri string) error {
 
 // GetHover implements LSPClient.
 func (c *GoplsClient) GetHover(ctx context.Context, uri string, line, character int) (string, error) {
-	opened, err := c.ensureDocumentOpen(ctx, uri, "go", "")
+	opened, err := c.ensureDocumentOpen(uri, "go", "")
 	if err != nil {
 		return "", err
 	}
 	if opened {
-		defer c.DidClose(ctx, uri)
+		defer func() {
+			_ = c.DidClose(ctx, uri)
+		}()
 	}
 	params := protocol.TextDocumentPositionParams{
 		TextDocument: protocol.TextDocumentIdentifier{URI: uri},
@@ -737,12 +737,14 @@ func (c *GoplsClient) GetHover(ctx context.Context, uri string, line, character 
 
 // GetCompletion implements LSPClient.
 func (c *GoplsClient) GetCompletion(ctx context.Context, uri string, line, character int) ([]string, error) {
-	opened, err := c.ensureDocumentOpen(ctx, uri, "go", "")
+	opened, err := c.ensureDocumentOpen(uri, "go", "")
 	if err != nil {
 		return nil, err
 	}
 	if opened {
-		defer c.DidClose(ctx, uri)
+		defer func() {
+			_ = c.DidClose(ctx, uri)
+		}()
 	}
 	params := protocol.TextDocumentPositionParams{
 		TextDocument: protocol.TextDocumentIdentifier{URI: uri},

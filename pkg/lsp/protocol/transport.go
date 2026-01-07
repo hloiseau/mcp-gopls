@@ -65,18 +65,18 @@ func (t *Transport) SendMessage(msg *JSONRPCMessage) error {
 	}
 
 	if _, err := fmt.Fprintf(t.writer, "Content-Length: %d\r\n\r\n", len(data)); err != nil {
-		t.Close()
+		_ = t.Close()
 		return fmt.Errorf("failed to write header (transport closed): %w", err)
 	}
 
 	if _, err := t.writer.Write(data); err != nil {
-		t.Close()
+		_ = t.Close()
 		return fmt.Errorf("failed to write content (transport closed): %w", err)
 	}
 
 	if f, ok := t.writer.(interface{ Flush() error }); ok {
 		if err := f.Flush(); err != nil {
-			t.Close()
+			_ = t.Close()
 			return fmt.Errorf("failed to flush writer (transport closed): %w", err)
 		}
 	}
@@ -120,7 +120,7 @@ func (t *Transport) receiveNext() (*JSONRPCMessage, error) {
 	contentLength, err := t.readHeader()
 	if err != nil {
 		if err == io.EOF || strings.Contains(err.Error(), "pipe") || strings.Contains(err.Error(), "connection") {
-			t.Close()
+			_ = t.Close()
 			return nil, fmt.Errorf("error reading header (transport closed): %w", err)
 		}
 		return nil, fmt.Errorf("error reading header: %w", err)
@@ -129,7 +129,7 @@ func (t *Transport) receiveNext() (*JSONRPCMessage, error) {
 	content, err := t.readContent(contentLength)
 	if err != nil {
 		if err == io.EOF || strings.Contains(err.Error(), "pipe") || strings.Contains(err.Error(), "connection") {
-			t.Close()
+			_ = t.Close()
 			return nil, fmt.Errorf("error reading content (transport closed): %w", err)
 		}
 		return nil, fmt.Errorf("error reading content: %w", err)

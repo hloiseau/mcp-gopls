@@ -1,4 +1,5 @@
 # mcp-gopls – MCP server for Go (gopls)
+<!-- markdownlint-disable MD022 MD012 MD029 MD060 -->
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 ![Go version](https://img.shields.io/badge/Go-1.25+-informational)
 [![CI](https://github.com/hloiseau/mcp-gopls/actions/workflows/ci.yml/badge.svg)](https://github.com/hloiseau/mcp-gopls/actions)

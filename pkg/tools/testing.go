@@ -93,7 +93,9 @@ func (t *LSPTools) runCoverageByFunction(ctx context.Context, srv *server.MCPSer
 	if err != nil {
 		return coverageCommandResult{}, err
 	}
-	defer os.Remove(tempFile.Name())
+	defer func() {
+		_ = os.Remove(tempFile.Name())
+	}()
 	_ = tempFile.Close()
 
 	testResult, err := t.runCommand(ctx, srv, token, "go", "test", target, "-coverprofile", tempFile.Name())
