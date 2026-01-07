@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 
-	"github.com/hloiseaufcms/mcp-gopls/pkg/lsp/protocol"
+	"github.com/hloiseau/mcp-gopls/v2/pkg/lsp/protocol"
 )
 
 // DiagnosticsHandler is invoked whenever gopls publishes diagnostics.

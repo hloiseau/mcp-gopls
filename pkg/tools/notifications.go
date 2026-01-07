@@ -6,7 +6,7 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 
-	"github.com/hloiseaufcms/mcp-gopls/pkg/lsp/protocol"
+	"github.com/hloiseau/mcp-gopls/v2/pkg/lsp/protocol"
 )
 
 func getProgressToken(meta *mcp.Meta) mcp.ProgressToken {

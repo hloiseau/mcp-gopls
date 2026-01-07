@@ -12,8 +12,8 @@ import (
 
 	mcpsrv "github.com/mark3labs/mcp-go/server"
 
-	"github.com/hloiseaufcms/mcp-gopls/pkg/lsp/client"
-	"github.com/hloiseaufcms/mcp-gopls/pkg/tools"
+	"github.com/hloiseau/mcp-gopls/v2/pkg/lsp/client"
+	"github.com/hloiseau/mcp-gopls/v2/pkg/tools"
 )
 
 var (
@@ -192,7 +192,7 @@ func setupLogger(cfg Config) (*os.File, *slog.Logger, error) {
 	return file, slog.New(handler), nil
 }
 
-func setupServer(cfg Config, logger *slog.Logger) *mcpsrv.MCPServer {
+func setupServer(logger *slog.Logger) *mcpsrv.MCPServer {
 	srv := mcpsrv.NewMCPServer(
 		"MCP LSP Go",
 		"2.0.0",

@@ -7,7 +7,7 @@ import (
 
 	"github.com/mark3labs/mcp-go/mcp"
 
-	"github.com/hloiseaufcms/mcp-gopls/pkg/lsp/protocol"
+	"github.com/hloiseau/mcp-gopls/v2/pkg/lsp/protocol"
 )
 
 func TestParsePosition(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/hloiseaufcms/mcp-gopls/pkg/lsp/protocol"
+	"github.com/hloiseau/mcp-gopls/v2/pkg/lsp/protocol"
 )
 
 func TestNavigationAndRefactorHelpers(t *testing.T) {
@@ -136,7 +136,7 @@ func TestNavigationAndRefactorHelpers(t *testing.T) {
 			call: func(c *GoplsClient) (any, error) {
 				return c.Rename(context.Background(), uri, 2, 2, "bar")
 			},
-			response: protocol.WorkspaceEdit{Changes: map[string][]protocol.TextEdit{uri: []protocol.TextEdit{{NewText: "bar"}}}},
+			response: protocol.WorkspaceEdit{Changes: map[string][]protocol.TextEdit{uri: {{NewText: "bar"}}}},
 			checkParams: func(t *testing.T, params any) {
 				t.Helper()
 				if p, ok := params.(protocol.RenameParams); !ok || p.NewName != "bar" {

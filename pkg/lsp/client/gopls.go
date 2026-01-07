@@ -18,8 +18,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/hloiseaufcms/mcp-gopls/internal/goenv"
-	"github.com/hloiseaufcms/mcp-gopls/pkg/lsp/protocol"
+	"github.com/hloiseau/mcp-gopls/v2/internal/goenv"
+	"github.com/hloiseau/mcp-gopls/v2/pkg/lsp/protocol"
 )
 
 const (
@@ -208,7 +208,7 @@ func (c *GoplsClient) readerLoop() {
 		}
 
 		if msg.ID == nil {
-			c.handleNotification(c.readerCtx, msg)
+			c.handleNotification(msg)
 			continue
 		}
 
@@ -340,7 +340,7 @@ func (c *GoplsClient) sendRequest(id int64, method string, params any) error {
 	return nil
 }
 
-func (c *GoplsClient) notify(ctx context.Context, method string, params any) error {
+func (c *GoplsClient) notify(method string, params any) error {
 	c.sendMu.Lock()
 	defer c.sendMu.Unlock()
 
@@ -436,7 +436,7 @@ func (c *GoplsClient) Initialize(ctx context.Context) error {
 		return fmt.Errorf("initialize gopls: %w", lastErr)
 	}
 
-	if err := c.notify(ctx, "initialized", map[string]any{}); err != nil {
+	if err := c.notify("initialized", map[string]any{}); err != nil {
 		c.initialized.Store(false)
 		return fmt.Errorf("send initialized notification: %w", err)
 	}
@@ -478,7 +478,7 @@ func (c *GoplsClient) Close(ctx context.Context) error {
 			if err := c.Shutdown(ctx); err != nil {
 				errs = append(errs, err)
 			}
-			if err := c.notify(ctx, "exit", map[string]any{}); err != nil {
+			if err := c.notify("exit", map[string]any{}); err != nil {
 				errs = append(errs, err)
 			}
 			c.initialized.Store(false)
@@ -656,7 +656,7 @@ func (c *GoplsClient) ensureDocumentOpen(ctx context.Context, uri, languageID, t
 		},
 	}
 
-	if err := c.notify(ctx, "textDocument/didOpen", params); err != nil {
+	if err := c.notify("textDocument/didOpen", params); err != nil {
 		c.openedDocs.Delete(uri)
 		return false, err
 	}
@@ -675,7 +675,7 @@ func (c *GoplsClient) DidClose(ctx context.Context, uri string) error {
 			"uri": uri,
 		},
 	}
-	return c.notify(ctx, "textDocument/didClose", params)
+	return c.notify("textDocument/didClose", params)
 }
 
 // GetHover implements LSPClient.
@@ -874,7 +874,7 @@ func (c *GoplsClient) OnDiagnostics(handler DiagnosticsHandler) func() {
 	}
 }
 
-func (c *GoplsClient) handleNotification(ctx context.Context, msg *protocol.JSONRPCMessage) {
+func (c *GoplsClient) handleNotification(msg *protocol.JSONRPCMessage) {
 	switch msg.Method {
 	case "textDocument/publishDiagnostics":
 		var params protocol.PublishDiagnosticsParams

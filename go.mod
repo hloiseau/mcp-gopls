@@ -1,4 +1,4 @@
-module github.com/hloiseaufcms/mcp-gopls
+module github.com/hloiseau/mcp-gopls/v2
 
 go 1.25
 

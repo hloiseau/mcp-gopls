@@ -27,7 +27,7 @@ func NewService(cfg Config) (*Service, error) {
 		return nil, fmt.Errorf("bootstrap lsp client: %w", err)
 	}
 
-	svc.server = setupServer(cfg, logger)
+	svc.server = setupServer(logger)
 	svc.registerResources()
 	svc.registerPrompts()
 	return svc, nil

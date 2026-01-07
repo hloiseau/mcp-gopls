@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hloiseaufcms/mcp-gopls/pkg/server"
+	"github.com/hloiseau/mcp-gopls/v2/pkg/server"
 )
 
 type stubService struct {

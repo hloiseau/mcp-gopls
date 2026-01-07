@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hloiseaufcms/mcp-gopls/internal/goenv"
+	"github.com/hloiseau/mcp-gopls/v2/internal/goenv"
 )
 
 func TestBuildGoplsEnv_AppendsWhenMissing(t *testing.T) {

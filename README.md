@@ -91,16 +91,15 @@ If you mostly want read-only/introspective tools (diagnostics, symbol search, re
 ## Installation
 
 ```bash
-go install github.com/hloiseaufcms/mcp-gopls/cmd/mcp-gopls@latest
+go install github.com/hloiseau/mcp-gopls/v2/cmd/mcp-gopls@latest
 ```
->Note: the Go module path is github.com/hloiseaufcms/mcp-gopls, even though the GitHub repo is under hloiseau.
 
 ## Quick Start
 
 1. **Install** the server:
 
 ```bash
-go install github.com/hloiseaufcms/mcp-gopls/cmd/mcp-gopls@latest
+go install github.com/hloiseau/mcp-gopls/v2/cmd/mcp-gopls@latest
 ```
 
 2. **Verify** it's on your `$PATH`:
@@ -356,7 +355,7 @@ What does the Context.WithTimeout function do in Go?
 ## Development
 
 ```bash
-git clone https://github.com/hloiseaufcms/mcp-gopls.git
+git clone https://github.com/hloiseau/mcp-gopls.git
 cd mcp-gopls
 go mod tidy
 go test ./...
