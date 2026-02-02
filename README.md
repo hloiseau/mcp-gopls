@@ -3,6 +3,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 ![Go version](https://img.shields.io/badge/Go-1.25+-informational)
 [![CI](https://github.com/hloiseau/mcp-gopls/actions/workflows/ci.yml/badge.svg)](https://github.com/hloiseau/mcp-gopls/actions)
+[![Docker Image](https://img.shields.io/badge/ghcr.io-hloiseau/mcp--gopls-blue)](https://ghcr.io/hloiseau/mcp-gopls)
 
 A Model Context Protocol (MCP) server that lets AI assistants use Go’s LSP (`gopls`) for navigation, diagnostics, testing, coverage, and more.
 
