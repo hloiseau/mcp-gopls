@@ -113,6 +113,31 @@ mcp-gopls --help
 
 ---
 
+## Docker / MCP Gateway
+
+If you prefer to run `mcp-gopls` in a container (for Docker MCP Gateway or other containerized setups), use the official image.
+
+### Docker run
+
+```bash
+docker run --rm -i \
+  -v /absolute/path/to/your/go/project:/workspace \
+  ghcr.io/hloiseau/mcp-gopls:latest \
+  --workspace /workspace
+```
+
+### docker-mcp.yaml
+
+Copy `docs/docker-mcp.yaml`, update the bind mount path, then run from that directory:
+
+```bash
+docker mcp gateway run
+```
+
+### Tools catalog metadata
+
+If your MCP catalog tooling requires a `toolsUrl`, use `docs/tools.json` as a static tool list.
+
 ## Detailed Client Setup
 
 > **Note:** All clients point to the same command:  

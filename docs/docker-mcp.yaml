@@ -1,0 +1,8 @@
+services:
+  mcp-gopls:
+    image: ghcr.io/hloiseau/mcp-gopls:latest
+    command:
+      - --workspace
+      - /workspace
+    volumes:
+      - /absolute/path/to/your/go/project:/workspace

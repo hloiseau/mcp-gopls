@@ -1,0 +1,102 @@
+[
+  {
+    "name": "go_to_definition",
+    "description": "Navigate to the definition of a symbol.",
+    "arguments": [
+      {"name": "file_uri", "type": "string", "desc": "URI of the file."},
+      {"name": "position", "type": "object", "desc": "Position of the symbol."}
+    ]
+  },
+  {
+    "name": "find_references",
+    "description": "Find all references to a symbol.",
+    "arguments": [
+      {"name": "file_uri", "type": "string", "desc": "URI of the file."},
+      {"name": "position", "type": "object", "desc": "Position of the symbol."}
+    ]
+  },
+  {
+    "name": "check_diagnostics",
+    "description": "Get diagnostics for a file.",
+    "arguments": [
+      {"name": "file_uri", "type": "string", "desc": "URI of the file."}
+    ]
+  },
+  {
+    "name": "get_hover_info",
+    "description": "Get hover information for a symbol.",
+    "arguments": [
+      {"name": "file_uri", "type": "string", "desc": "URI of the file."},
+      {"name": "position", "type": "object", "desc": "Position of the symbol."}
+    ]
+  },
+  {
+    "name": "get_completion",
+    "description": "Get completion suggestions at a position.",
+    "arguments": [
+      {"name": "file_uri", "type": "string", "desc": "URI of the file."},
+      {"name": "position", "type": "object", "desc": "Position where to get completion."}
+    ]
+  },
+  {
+    "name": "format_document",
+    "description": "Return formatting edits for a Go file.",
+    "arguments": [
+      {"name": "file_uri", "type": "string", "desc": "URI of the file to format."}
+    ]
+  },
+  {
+    "name": "rename_symbol",
+    "description": "Compute rename edits for a symbol.",
+    "arguments": [
+      {"name": "file_uri", "type": "string", "desc": "URI of the file."},
+      {"name": "position", "type": "object", "desc": "Position of the symbol."},
+      {"name": "new_name", "type": "string", "desc": "New identifier name."}
+    ]
+  },
+  {
+    "name": "list_code_actions",
+    "description": "List available code actions for a given range.",
+    "arguments": [
+      {"name": "file_uri", "type": "string", "desc": "URI of the file."},
+      {"name": "range", "type": "object", "desc": "Range to inspect for code actions."}
+    ]
+  },
+  {
+    "name": "search_workspace_symbols",
+    "description": "Search workspace symbols via LSP.",
+    "arguments": [
+      {"name": "query", "type": "string", "desc": "Search query."}
+    ]
+  },
+  {
+    "name": "analyze_coverage",
+    "description": "Analyze test coverage for Go code.",
+    "arguments": [
+      {"name": "path", "type": "string", "desc": "Path to the package or directory to analyze. Defaults to ./..."},
+      {"name": "output_format", "type": "string", "desc": "Format of the coverage output: summary (default) or func."}
+    ]
+  },
+  {
+    "name": "run_go_test",
+    "description": "Run go test for a package or pattern.",
+    "arguments": [
+      {"name": "path", "type": "string", "desc": "Package path or pattern. Defaults to ./..."}
+    ]
+  },
+  {
+    "name": "run_go_mod_tidy",
+    "description": "Execute go mod tidy in the workspace.",
+    "arguments": []
+  },
+  {
+    "name": "run_govulncheck",
+    "description": "Execute govulncheck ./... in the workspace.",
+    "arguments": []
+  },
+  {
+    "name": "module_graph",
+    "description": "Return the Go module dependency graph.",
+    "arguments": []
+  }
+]
