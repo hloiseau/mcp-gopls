@@ -17,6 +17,10 @@ type Config struct {
 	LogLevel        slog.Level
 	ShutdownTimeout time.Duration
 	RPCTimeout      time.Duration
+	// FSWatch enables filesystem watching: when .go, go.mod or go.sum files
+	// change on disk, gopls is notified via workspace/didChangeWatchedFiles.
+	// Disabled by default; opt in with --fs-watch or MCP_GOPLS_FS_WATCH=true.
+	FSWatch bool
 }
 
 // DefaultConfig returns sensible defaults for local development.

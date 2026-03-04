@@ -127,3 +127,30 @@ type SymbolInformation struct {
 	Kind     int      `json:"kind"`
 	Location Location `json:"location"`
 }
+
+// FileChangeType represents the kind of file change (LSP spec 3.17).
+type FileChangeType int
+
+const (
+	// FileCreated indicates the file was created.
+	FileCreated FileChangeType = 1
+	// FileChanged indicates the file was modified.
+	FileChanged FileChangeType = 2
+	// FileDeleted indicates the file was deleted.
+	FileDeleted FileChangeType = 3
+)
+
+// FileEvent represents a single file-system change event.
+type FileEvent struct {
+	// URI of the changed file in file:///... format.
+	URI string `json:"uri"`
+	// Type is the kind of change (created / changed / deleted).
+	Type FileChangeType `json:"type"`
+}
+
+// DidChangeWatchedFilesParams holds the parameters for the
+// workspace/didChangeWatchedFiles notification.
+type DidChangeWatchedFilesParams struct {
+	// Changes is the list of file change events.
+	Changes []FileEvent `json:"changes"`
+}
