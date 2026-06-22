@@ -86,8 +86,6 @@ type GoplsClient struct {
 
 	diagnosticsMu       sync.RWMutex
 	diagnosticsCache    map[string][]protocol.Diagnostic
-	diagnosticsHandlers map[int64]DiagnosticsHandler
-	handlerCounter      atomic.Int64
 
 	openedDocs sync.Map
 
@@ -170,8 +168,7 @@ func NewGoplsClient(opts ...Option) (*GoplsClient, error) {
 		callTimeout:         cfg.callTimeout,
 		workspaceDir:        workspaceDir,
 		workspaceURI:        workspaceURI,
-		diagnosticsCache:    make(map[string][]protocol.Diagnostic),
-		diagnosticsHandlers: make(map[int64]DiagnosticsHandler),
+		diagnosticsCache:   make(map[string][]protocol.Diagnostic),
 		pending:             make(map[int64]chan rpcResponse),
 		diagnosticsWaiters:  make(map[string][]chan struct{}),
 	}
@@ -779,6 +776,16 @@ func (c *GoplsClient) GetCompletion(ctx context.Context, uri string, line, chara
 }
 
 func (c *GoplsClient) DocumentFormatting(ctx context.Context, uri string) ([]protocol.TextEdit, error) {
+	opened, err := c.ensureDocumentOpen(uri, "go", "")
+	if err != nil {
+		return nil, err
+	}
+	if opened {
+		defer func() {
+			_ = c.DidClose(ctx, uri)
+		}()
+	}
+
 	params := protocol.DocumentFormattingParams{
 		TextDocument: protocol.TextDocumentIdentifier{URI: uri},
 		Options: protocol.FormattingOptions{
@@ -800,6 +807,16 @@ func (c *GoplsClient) DocumentFormatting(ctx context.Context, uri string) ([]pro
 }
 
 func (c *GoplsClient) Rename(ctx context.Context, uri string, line, character int, newName string) (*protocol.WorkspaceEdit, error) {
+	opened, err := c.ensureDocumentOpen(uri, "go", "")
+	if err != nil {
+		return nil, err
+	}
+	if opened {
+		defer func() {
+			_ = c.DidClose(ctx, uri)
+		}()
+	}
+
 	params := protocol.RenameParams{
 		TextDocumentPositionParams: protocol.TextDocumentPositionParams{
 			TextDocument: protocol.TextDocumentIdentifier{URI: uri},
@@ -824,11 +841,32 @@ func (c *GoplsClient) Rename(ctx context.Context, uri string, line, character in
 }
 
 func (c *GoplsClient) CodeActions(ctx context.Context, uri string, rng protocol.Range) ([]protocol.CodeAction, error) {
+	opened, err := c.ensureDocumentOpen(uri, "go", "")
+	if err != nil {
+		return nil, err
+	}
+	if opened {
+		defer func() {
+			_ = c.DidClose(ctx, uri)
+		}()
+	}
+
+	// Use cached diagnostics (best-effort) so gopls can suggest quick-fixes.
+	var diagnostics []protocol.Diagnostic
+	if c.diagnosticsCache != nil {
+		c.diagnosticsMu.RLock()
+		diagnostics = c.diagnosticsCache[uri]
+		c.diagnosticsMu.RUnlock()
+	}
+	if diagnostics == nil {
+		diagnostics = []protocol.Diagnostic{}
+	}
+
 	params := protocol.CodeActionParams{
 		TextDocument: protocol.TextDocumentIdentifier{URI: uri},
 		Range:        rng,
 		Context: protocol.CodeActionContext{
-			Diagnostics: []protocol.Diagnostic{},
+			Diagnostics: diagnostics,
 		},
 	}
 
@@ -868,24 +906,6 @@ func (c *GoplsClient) NotifyDidChangeWatchedFiles(_ context.Context, changes []p
 	return c.notify("workspace/didChangeWatchedFiles", params)
 }
 
-// OnDiagnostics registers a handler for publishDiagnostics notifications.
-func (c *GoplsClient) OnDiagnostics(handler DiagnosticsHandler) func() {
-	if handler == nil {
-		return func() {}
-	}
-
-	id := c.handlerCounter.Add(1)
-	c.diagnosticsMu.Lock()
-	c.diagnosticsHandlers[id] = handler
-	c.diagnosticsMu.Unlock()
-
-	return func() {
-		c.diagnosticsMu.Lock()
-		delete(c.diagnosticsHandlers, id)
-		c.diagnosticsMu.Unlock()
-	}
-}
-
 func (c *GoplsClient) handleNotification(msg *protocol.JSONRPCMessage) {
 	switch msg.Method {
 	case "textDocument/publishDiagnostics":
@@ -903,11 +923,6 @@ func (c *GoplsClient) handleNotification(msg *protocol.JSONRPCMessage) {
 func (c *GoplsClient) updateDiagnostics(params protocol.PublishDiagnosticsParams) {
 	c.diagnosticsMu.Lock()
 	c.diagnosticsCache[params.URI] = params.Diagnostics
-
-	handlers := make([]DiagnosticsHandler, 0, len(c.diagnosticsHandlers))
-	for _, h := range c.diagnosticsHandlers {
-		handlers = append(handlers, h)
-	}
 	waiters := c.diagnosticsWaiters[params.URI]
 	if len(waiters) > 0 {
 		delete(c.diagnosticsWaiters, params.URI)
@@ -919,10 +934,6 @@ func (c *GoplsClient) updateDiagnostics(params protocol.PublishDiagnosticsParams
 		case waiter <- struct{}{}:
 		default:
 		}
-	}
-
-	for _, handler := range handlers {
-		handler(params)
 	}
 }
 
@@ -1067,7 +1078,7 @@ func resolveWorkspace(dir string) (string, string, error) {
 		return "", "", fmt.Errorf("workspace directory invalid: %w", statErr)
 	}
 
-	return dir, pathToURI(dir), nil
+	return dir, protocol.PathToURI(dir), nil
 }
 
 func buildGoplsEnv(env []string) []string {
@@ -1131,19 +1142,6 @@ func findGoRoot(start string) string {
 		}
 		current = next
 	}
-}
-
-func pathToURI(path string) string {
-	path = filepath.Clean(path)
-	if runtime.GOOS == "windows" {
-		path = strings.ReplaceAll(path, "\\", "/")
-		if len(path) >= 2 && path[1] == ':' {
-			drive := strings.ToLower(string(path[0]))
-			path = "/" + drive + ":" + path[2:]
-		}
-	}
-	u := url.URL{Scheme: "file", Path: path}
-	return u.String()
 }
 
 func uriToPath(uri string) (string, error) {

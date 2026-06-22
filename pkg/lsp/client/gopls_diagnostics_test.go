@@ -13,10 +13,9 @@ import (
 
 func newTestClient() *GoplsClient {
 	return &GoplsClient{
-		logger:              slog.New(slog.NewTextHandler(io.Discard, nil)),
-		diagnosticsCache:    make(map[string][]protocol.Diagnostic),
-		diagnosticsHandlers: make(map[int64]DiagnosticsHandler),
-		diagnosticsWaiters:  make(map[string][]chan struct{}),
+		logger:             slog.New(slog.NewTextHandler(io.Discard, nil)),
+		diagnosticsCache:   make(map[string][]protocol.Diagnostic),
+		diagnosticsWaiters: make(map[string][]chan struct{}),
 	}
 }
 

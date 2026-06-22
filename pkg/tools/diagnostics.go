@@ -7,6 +7,8 @@ import (
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
+
+	"github.com/hloiseau/mcp-gopls/v2/pkg/lsp/protocol"
 )
 
 func (t *LSPTools) registerDiagnosticsTools(s *server.MCPServer) {
@@ -35,9 +37,7 @@ func (t *LSPTools) registerCheckDiagnostics(s *server.MCPServer) {
 			return nil, err
 		}
 
-		if !strings.HasPrefix(fileURI, "file://") {
-			fileURI = convertPathToURI(fileURI)
-		}
+		fileURI = protocol.NormalizeFileURI(fileURI)
 
 		lspClient := t.getClient()
 		if lspClient == nil {

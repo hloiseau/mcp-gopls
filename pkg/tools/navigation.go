@@ -7,6 +7,8 @@ import (
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
+
+	"github.com/hloiseau/mcp-gopls/v2/pkg/lsp/protocol"
 )
 
 func (t *LSPTools) registerNavigationTools(s *server.MCPServer) {
@@ -45,9 +47,7 @@ func (t *LSPTools) registerGoToDefinition(s *server.MCPServer) {
 			return nil, err
 		}
 
-		if !strings.HasPrefix(fileURI, "file://") {
-			fileURI = convertPathToURI(fileURI)
-		}
+		fileURI = protocol.NormalizeFileURI(fileURI)
 
 		lspClient := t.getClient()
 		if lspClient == nil {
@@ -102,9 +102,7 @@ func (t *LSPTools) registerFindReferences(s *server.MCPServer) {
 			return nil, err
 		}
 
-		if !strings.HasPrefix(fileURI, "file://") {
-			fileURI = convertPathToURI(fileURI)
-		}
+		fileURI = protocol.NormalizeFileURI(fileURI)
 
 		lspClient := t.getClient()
 		if lspClient == nil {
