@@ -1,46 +1,46 @@
 package protocol
 
-// Position représente une position dans un document texte
+// Position represents a position in a text document.
 type Position struct {
 	Line      int `json:"line"`
 	Character int `json:"character"`
 }
 
-// Range représente une plage dans un document texte
+// Range represents a span in a text document.
 type Range struct {
 	Start Position `json:"start"`
 	End   Position `json:"end"`
 }
 
-// Location représente un emplacement dans un document texte
+// Location represents a location in a text document.
 type Location struct {
 	URI   string `json:"uri"`
 	Range Range  `json:"range"`
 }
 
-// TextDocumentIdentifier identifie un document texte
+// TextDocumentIdentifier identifies a text document.
 type TextDocumentIdentifier struct {
 	URI string `json:"uri"`
 }
 
-// TextDocumentPositionParams paramètres pour les requêtes basées sur la position
+// TextDocumentPositionParams holds parameters for position-based requests.
 type TextDocumentPositionParams struct {
 	TextDocument TextDocumentIdentifier `json:"textDocument"`
 	Position     Position               `json:"position"`
 }
 
-// ReferenceContext contexte pour une requête de références
+// ReferenceContext provides context for a references request.
 type ReferenceContext struct {
 	IncludeDeclaration bool `json:"includeDeclaration"`
 }
 
-// ReferenceParams paramètres pour les requêtes de références
+// ReferenceParams holds parameters for references requests.
 type ReferenceParams struct {
 	TextDocumentPositionParams
 	Context ReferenceContext `json:"context"`
 }
 
-// Diagnostic représente un diagnostic comme un problème de code
+// Diagnostic represents a code diagnostic (error, warning, etc.).
 type Diagnostic struct {
 	Range    Range  `json:"range"`
 	Severity int    `json:"severity,omitempty"` // 1=Error, 2=Warning, 3=Info, 4=Hint
@@ -49,14 +49,14 @@ type Diagnostic struct {
 	Message  string `json:"message"`
 }
 
-// PublishDiagnosticsParams représente la charge utile pour textDocument/publishDiagnostics.
+// PublishDiagnosticsParams holds the payload for textDocument/publishDiagnostics.
 type PublishDiagnosticsParams struct {
 	URI         string       `json:"uri"`
 	Version     *int         `json:"version,omitempty"`
 	Diagnostics []Diagnostic `json:"diagnostics"`
 }
 
-// DiagnosticSeverity énumère les niveaux de sévérité des diagnostics
+// DiagnosticSeverity enumerates diagnostic severity levels.
 type DiagnosticSeverity int
 
 const (
@@ -66,62 +66,62 @@ const (
 	SeverityHint    DiagnosticSeverity = 4
 )
 
-// TextEdit représente une modification textuelle.
+// TextEdit represents a textual edit.
 type TextEdit struct {
 	Range   Range  `json:"range"`
 	NewText string `json:"newText"`
 }
 
-// FormattingOptions représente les options de formatage LSP.
+// FormattingOptions represents LSP formatting options.
 type FormattingOptions struct {
 	TabSize      int  `json:"tabSize"`
 	InsertSpaces bool `json:"insertSpaces"`
 }
 
-// DocumentFormattingParams paramètres pour textDocument/formatting.
+// DocumentFormattingParams holds parameters for textDocument/formatting.
 type DocumentFormattingParams struct {
 	TextDocument TextDocumentIdentifier `json:"textDocument"`
 	Options      FormattingOptions      `json:"options"`
 }
 
-// TextDocumentEdit représente un ensemble de modifications pour un document spécifique.
+// TextDocumentEdit represents a set of edits for a specific document.
 type TextDocumentEdit struct {
 	TextDocument OptionalVersionedTextDocumentIdentifier `json:"textDocument"`
 	Edits        []TextEdit                              `json:"edits"`
 }
 
-// OptionalVersionedTextDocumentIdentifier identifie un document texte avec une version optionnelle.
+// OptionalVersionedTextDocumentIdentifier identifies a text document with an optional version.
 type OptionalVersionedTextDocumentIdentifier struct {
 	URI     string `json:"uri"`
 	Version *int   `json:"version"`
 }
 
-// WorkspaceEdit représente un ensemble de modifications.
+// WorkspaceEdit represents a set of workspace modifications.
 type WorkspaceEdit struct {
 	Changes         map[string][]TextEdit `json:"changes,omitempty"`
 	DocumentChanges []TextDocumentEdit    `json:"documentChanges,omitempty"`
 }
 
-// RenameParams paramètres pour textDocument/rename.
+// RenameParams holds parameters for textDocument/rename.
 type RenameParams struct {
 	TextDocumentPositionParams
 	NewName string `json:"newName"`
 }
 
-// CodeActionContext fournit le contexte d'une action de code.
+// CodeActionContext provides context for a code action request.
 type CodeActionContext struct {
 	Diagnostics []Diagnostic `json:"diagnostics,omitempty"`
 	Only        []string     `json:"only,omitempty"`
 }
 
-// CodeActionParams paramètres pour textDocument/codeAction.
+// CodeActionParams holds parameters for textDocument/codeAction.
 type CodeActionParams struct {
 	TextDocument TextDocumentIdentifier `json:"textDocument"`
 	Range        Range                  `json:"range"`
 	Context      CodeActionContext      `json:"context"`
 }
 
-// CodeAction représente une action de code disponible.
+// CodeAction represents an available code action.
 type CodeAction struct {
 	Title       string         `json:"title"`
 	Kind        string         `json:"kind,omitempty"`
@@ -129,12 +129,12 @@ type CodeAction struct {
 	Edit        *WorkspaceEdit `json:"edit,omitempty"`
 }
 
-// WorkspaceSymbolParams paramètres pour workspace/symbol.
+// WorkspaceSymbolParams holds parameters for workspace/symbol.
 type WorkspaceSymbolParams struct {
 	Query string `json:"query"`
 }
 
-// SymbolInformation décrit un symbole trouvé.
+// SymbolInformation describes a workspace symbol.
 type SymbolInformation struct {
 	Name     string   `json:"name"`
 	Kind     int      `json:"kind"`

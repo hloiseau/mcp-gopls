@@ -1,7 +1,7 @@
 # mcp-gopls – MCP server for Go (gopls)
 <!-- markdownlint-disable MD022 MD012 MD029 MD060 -->
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-![Go version](https://img.shields.io/badge/Go-1.25+-informational)
+![Go version](https://img.shields.io/badge/Go-1.26+-informational)
 [![CI](https://github.com/hloiseau/mcp-gopls/actions/workflows/ci.yml/badge.svg)](https://github.com/hloiseau/mcp-gopls/actions)
 [![Docker Image](https://img.shields.io/badge/ghcr.io-hloiseau/mcp--gopls-blue)](https://ghcr.io/hloiseau/mcp-gopls)
 
@@ -24,7 +24,7 @@ This MCP server helps AI assistants to:
 - Read workspace resources (overview + go.mod) and consume curated prompts
 
 > **Status:** Actively developed – used in real projects.  
-> Tested with Go 1.25.x and `gopls@latest`.  
+> Tested with Go 1.26.x and `gopls@latest`.  
 
 ## Architecture
 
@@ -39,7 +39,8 @@ The server communicates with [gopls](https://github.com/golang/tools/tree/master
 - **Extended LSP surface**: navigation, diagnostics, formatting, rename, code actions, hover, completion, workspace symbols
 - **Test & tooling helpers**: coverage analysis, `go test`, `go mod tidy`, `govulncheck`, `go mod graph`
 - **MCP extras**: resources (`resource://workspace/overview`, `resource://workspace/go.mod`) and prompts (`summarize_diagnostics`, `refactor_plan`)
-- **Progress streaming**: long-running commands emit `notifications/progress` events so clients can surface status updates
+- **Filesystem watching**: opt-in `--fs-watch` to keep gopls index fresh after external file changes
+- **Progress streaming**: long-running shell commands emit `notifications/progress` events so clients can surface status updates
 
 ### Feature comparison: `mcp-gopls` vs built-in `gopls` MCP
 
@@ -290,13 +291,11 @@ The inspector lets you call each tool/resource/prompt manually, which is handy f
 
 ## Progress Notifications
 
-Long-running tools emit structured `notifications/progress` events so IDEs can show rich status indicators:
+Long-running shell tools emit structured `notifications/progress` events so IDEs can show rich status indicators:
 
 - **Streaming progress** (`run_go_test`, `analyze_coverage`, `run_govulncheck`, `run_go_mod_tidy`) forwards incremental log lines and percentage updates. Cursor displays these as a live log.
-- **Start/complete events only** (`go_to_definition`, `find_references`, `rename_symbol`, etc.) fire a quick “started” event so the UI can show a spinner, followed by a completion payload with the final result.
-- Each progress token is now namespaced (e.g., `run_go_test/<rand>`) to avoid “unknown token” errors when multiple tools run concurrently.
-
-When integrating new tools, opt into streaming mode only if the underlying LSP/golang command produces meaningful interim output; otherwise stick to the lightweight start/complete flow to minimize noise.
+- Each progress token is namespaced (e.g., `run_go_test/<rand>`) to avoid "unknown token" errors when multiple tools run concurrently.
+- LSP-backed tools (`go_to_definition`, `find_references`, etc.) return results directly without progress events.
 
 ## Prompt Instructions
 
@@ -305,8 +304,8 @@ Both prompts are accessible from any MCP-aware client via the “Prompts” cata
 ### `summarize_diagnostics`
 
 - **When to use:** After `check_diagnostics` or `run_go_test` to turn raw diagnostics into actionable steps.
-- **Arguments:** None. The server automatically reads the last diagnostics payload cached by the tools layer.
-- **Typical workflow:** `check_diagnostics` → copy the returned array into the prompt input field (Cursor’s UI pastes it automatically when you select “Use last result”).
+- **Arguments:** None. Returns a system prompt instructing the AI to summarize diagnostics.
+- **Typical workflow:** Run `check_diagnostics` first, then use this prompt to guide the AI's analysis of the results.
 
 ### `refactor_plan`
 
@@ -340,8 +339,9 @@ The server supports various configuration options via command-line flags and env
 | `--workspace`         | `.`     | Absolute path to your Go project root          |
 | `--gopls-path`        | `gopls` | Path to the gopls binary                       |
 | `--log-level`         | `info`  | Log level (`debug`, `info`, `warn`, `error`)   |
-| `--rpc-timeout`       | `30s`   | RPC timeout for LSP calls                      |
-| `--shutdown-timeout`  | `5s`    | Timeout for graceful shutdown                  |
+| `--rpc-timeout`       | `45s`   | RPC timeout for LSP calls                      |
+| `--shutdown-timeout`  | `15s`   | Timeout for graceful shutdown                  |
+| `--fs-watch`          | `false` | Watch workspace for file changes and notify gopls |
 
 ### Environment Variables
 
@@ -350,10 +350,11 @@ All flags can be set via environment variables with the `MCP_GOPLS_` prefix:
 | Environment Variable       | Equivalent Flag       | Description                                    |
 |---------------------------|-----------------------|------------------------------------------------|
 | `MCP_GOPLS_WORKSPACE`     | `--workspace`         | Absolute path to your Go project root          |
-| `MCP_GOPLS_GOPLS_PATH`    | `--gopls-path`        | Path to the gopls binary                       |
+| `MCP_GOPLS_BIN`           | `--gopls-path`        | Path to the gopls binary                       |
 | `MCP_GOPLS_LOG_LEVEL`     | `--log-level`         | Log level (`debug`, `info`, `warn`, `error`)   |
-| `MCP_GOPLS_RPC_TIMEOUT`   | `--rpc-timeout`       | RPC timeout for LSP calls (e.g., `30s`, `1m`)  |
+| `MCP_GOPLS_RPC_TIMEOUT`   | `--rpc-timeout`       | RPC timeout for LSP calls (e.g., `45s`, `1m`)  |
 | `MCP_GOPLS_SHUTDOWN_TIMEOUT` | `--shutdown-timeout` | Timeout for graceful shutdown                |
+| `MCP_GOPLS_FS_WATCH`      | `--fs-watch`          | Enable filesystem watching (`true`/`false`)    |
 
 Command-line flags take precedence over environment variables.
 
@@ -409,7 +410,7 @@ All contributions should maintain test coverage and adhere to Go best practices.
 
 ## Prerequisites
 
-- Go 1.25+ (tested with `go1.25.4`)
+- Go 1.26+ (tested with `go1.26.x`)
 - `gopls` installed (`go install golang.org/x/tools/gopls@latest`)
 - Optional: `govulncheck` (`go install golang.org/x/vuln/cmd/govulncheck@latest`)
 - The server forces `GOTOOLCHAIN=local` for its nested `gopls` process. If you need a different toolchain, set `GOTOOLCHAIN` in the environment before launching `mcp-gopls`.

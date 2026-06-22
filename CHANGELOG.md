@@ -1,3 +1,21 @@
+## v2.1.0 – 2026-06-22
+
+### Added
+- **Filesystem watcher** – opt-in `--fs-watch` flag (or `MCP_GOPLS_FS_WATCH=true`) monitors `.go`, `go.mod`, and `go.sum` files and notifies gopls via `workspace/didChangeWatchedFiles`, preventing stale cache after refactors. (PR #13)
+- **DocumentChanges support** – `rename_symbol` now correctly handles gopls responses using the LSP 3.x `documentChanges` format. Previously, rename edits were silently lost. (PR #15)
+
+### Changed
+- **Go 1.26** – bumped `go` directive and Dockerfile to Go 1.26.
+- **Dependencies** – upgraded `mcp-go` v0.43.0 → v0.55.0, `fsnotify` v1.9.0 → v1.10.1, and all transitive dependencies.
+- **Logs to stderr** – log output moved from stdout to stderr to avoid interfering with JSON-RPC on stdout.
+- **Modernized code** – `go fix` applied `strings.CutPrefix` pattern (Go 1.20+).
+
+### Fixed
+- **Dockerfile** – updated base image to `golang:1.26-bookworm` to match `go.mod` requirement.
+- **Env var** – Dockerfile now uses `MCP_GOPLS_BIN` (matching the actual code) instead of the non-functional `MCP_GOPLS_GOPLS_PATH`.
+
+---
+
 ## v2.0.0 – 2025-11-22
 
 ### Added
