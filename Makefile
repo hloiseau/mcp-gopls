@@ -19,9 +19,8 @@ test:
 	$(GO) test -v ./...
 
 coverage:
-	$(GO) test ./... -coverprofile=coverage.out
-	$(GO) tool cover -func=coverage.out > coverage.txt
-	@echo "Coverage profiles written to coverage.out and coverage.txt"
+	$(GO) test -coverprofile=coverage.out ./...
+	$(GO) tool cover -func=coverage.out
 
 deps:
 	$(GO) mod download
