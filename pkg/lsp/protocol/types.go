@@ -167,3 +167,17 @@ type DidChangeWatchedFilesParams struct {
 	// Changes is the list of file change events.
 	Changes []FileEvent `json:"changes"`
 }
+
+// CompletionItem represents a single completion suggestion from textDocument/completion.
+type CompletionItem struct {
+	Label         string `json:"label"`
+	Detail        string `json:"detail,omitempty"`
+	Documentation string `json:"documentation,omitempty"`
+	Kind          int    `json:"kind,omitempty"`
+	InsertText    string `json:"insertText,omitempty"`
+}
+
+// CompletionList is the structured response for textDocument/completion.
+type CompletionList struct {
+	Items []CompletionItem `json:"items"`
+}

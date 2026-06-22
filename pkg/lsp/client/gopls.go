@@ -736,7 +736,7 @@ func (c *GoplsClient) GetHover(ctx context.Context, uri string, line, character 
 }
 
 // GetCompletion implements LSPClient.
-func (c *GoplsClient) GetCompletion(ctx context.Context, uri string, line, character int) ([]string, error) {
+func (c *GoplsClient) GetCompletion(ctx context.Context, uri string, line, character int) ([]protocol.CompletionItem, error) {
 	opened, err := c.ensureDocumentOpen(uri, "go", "")
 	if err != nil {
 		return nil, err
@@ -759,23 +759,71 @@ func (c *GoplsClient) GetCompletion(ctx context.Context, uri string, line, chara
 		return nil, err
 	}
 
+	if resp.Result == nil || string(resp.Result) == "null" {
+		return nil, nil
+	}
+
+	var list protocol.CompletionList
+	if err := resp.ParseResult(&list); err == nil && list.Items != nil {
+		return list.Items, nil
+	}
+
+	var items []protocol.CompletionItem
+	if err := resp.ParseResult(&items); err == nil {
+		return items, nil
+	}
+
 	var payload map[string]any
 	if err := resp.ParseResult(&payload); err != nil {
 		return nil, fmt.Errorf("decode completion: %w", err)
 	}
 
-	var completions []string
-	if items, ok := payload["items"].([]any); ok {
-		for _, item := range items {
-			if dict, ok := item.(map[string]any); ok {
-				if label, ok := dict["label"].(string); ok {
-					completions = append(completions, label)
-				}
-			}
-		}
+	return parseCompletionItems(payload), nil
+}
+
+func parseCompletionItems(payload map[string]any) []protocol.CompletionItem {
+	rawItems, ok := payload["items"].([]any)
+	if !ok {
+		return nil
 	}
 
-	return completions, nil
+	items := make([]protocol.CompletionItem, 0, len(rawItems))
+	for _, raw := range rawItems {
+		dict, ok := raw.(map[string]any)
+		if !ok {
+			continue
+		}
+		item := protocol.CompletionItem{}
+		if label, ok := dict["label"].(string); ok {
+			item.Label = label
+		}
+		if detail, ok := dict["detail"].(string); ok {
+			item.Detail = detail
+		}
+		if insertText, ok := dict["insertText"].(string); ok {
+			item.InsertText = insertText
+		}
+		if kind, ok := dict["kind"].(float64); ok {
+			item.Kind = int(kind)
+		}
+		if doc, ok := dict["documentation"]; ok {
+			item.Documentation = extractMarkupContent(doc)
+		}
+		items = append(items, item)
+	}
+	return items
+}
+
+func extractMarkupContent(value any) string {
+	switch v := value.(type) {
+	case string:
+		return v
+	case map[string]any:
+		if text, ok := v["value"].(string); ok {
+			return text
+		}
+	}
+	return ""
 }
 
 func (c *GoplsClient) DocumentFormatting(ctx context.Context, uri string) ([]protocol.TextEdit, error) {

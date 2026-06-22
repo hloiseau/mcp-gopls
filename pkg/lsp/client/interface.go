@@ -29,7 +29,7 @@ type LSPClient interface {
 
 	// Support avancé
 	GetHover(ctx context.Context, uri string, line, character int) (string, error)
-	GetCompletion(ctx context.Context, uri string, line, character int) ([]string, error)
+	GetCompletion(ctx context.Context, uri string, line, character int) ([]protocol.CompletionItem, error)
 
 	DocumentFormatting(ctx context.Context, uri string) ([]protocol.TextEdit, error)
 	Rename(ctx context.Context, uri string, line, character int, newName string) (*protocol.WorkspaceEdit, error)

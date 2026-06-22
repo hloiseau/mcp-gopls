@@ -41,7 +41,7 @@ func (s *stubLSPClient) DidClose(ctx context.Context, uri string) error         
 func (s *stubLSPClient) GetHover(ctx context.Context, uri string, line, character int) (string, error) {
 	return "", nil
 }
-func (s *stubLSPClient) GetCompletion(ctx context.Context, uri string, line, character int) ([]string, error) {
+func (s *stubLSPClient) GetCompletion(ctx context.Context, uri string, line, character int) ([]protocol.CompletionItem, error) {
 	return nil, nil
 }
 func (s *stubLSPClient) DocumentFormatting(ctx context.Context, uri string) ([]protocol.TextEdit, error) {
@@ -148,8 +148,25 @@ func TestPromptDefinitions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("diag handler error: %v", err)
 	}
-	if len(res.Messages) != 1 || !strings.Contains(res.Messages[0].Content.(mcp.TextContent).Text, "diagnostics") {
+	diagText := res.Messages[0].Content.(mcp.TextContent).Text
+	if len(res.Messages) != 1 || !strings.Contains(diagText, "check_diagnostics") {
 		t.Fatalf("unexpected diagnostics prompt message: %#v", res.Messages)
+	}
+
+	diagWithData, err := diag.handler(context.Background(), mcp.GetPromptRequest{
+		Params: mcp.GetPromptParams{
+			Arguments: map[string]string{
+				"file_uri":    "file:///tmp/main.go",
+				"diagnostics": `[{"message":"unused import"}]`,
+			},
+		},
+	})
+	if err != nil {
+		t.Fatalf("diag handler with args error: %v", err)
+	}
+	diagWithDataText := diagWithData.Messages[0].Content.(mcp.TextContent).Text
+	if !strings.Contains(diagWithDataText, "file:///tmp/main.go") || !strings.Contains(diagWithDataText, "unused import") {
+		t.Fatalf("unexpected diagnostics prompt with args: %q", diagWithDataText)
 	}
 
 	refReq := mcp.GetPromptRequest{

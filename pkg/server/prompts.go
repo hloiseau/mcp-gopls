@@ -16,6 +16,12 @@ type promptDefinition struct {
 func (s *Service) promptDefinitions() []promptDefinition {
 	diagPrompt := mcp.NewPrompt("summarize_diagnostics",
 		mcp.WithPromptDescription("Summarize Go diagnostics returned by the check_diagnostics tool."),
+		mcp.WithArgument("file_uri",
+			mcp.ArgumentDescription("Optional file URI the diagnostics refer to"),
+		),
+		mcp.WithArgument("diagnostics",
+			mcp.ArgumentDescription("JSON diagnostics payload from check_diagnostics (paste the tool output here)"),
+		),
 	)
 
 	refactorPrompt := mcp.NewPrompt("refactor_plan",
@@ -30,11 +36,28 @@ func (s *Service) promptDefinitions() []promptDefinition {
 		{
 			prompt: diagPrompt,
 			handler: func(ctx context.Context, request mcp.GetPromptRequest) (*mcp.GetPromptResult, error) {
+				fileURI := request.Params.Arguments["file_uri"]
+				diagnostics := request.Params.Arguments["diagnostics"]
+
+				messageText := fmt.Sprintf(`You are reviewing Go diagnostics for a Go workspace.
+Workspace root: %s`, s.config.WorkspaceDir)
+				if fileURI != "" {
+					messageText += fmt.Sprintf("\nFile URI: %s", fileURI)
+				}
+				if diagnostics != "" {
+					messageText += fmt.Sprintf("\n\nDiagnostics JSON:\n%s", diagnostics)
+				} else {
+					messageText += `
+
+No diagnostics were provided. Run the check_diagnostics tool first, then paste its JSON output into the diagnostics argument before invoking this prompt again.`
+				}
+				messageText += "\n\nProvide a concise summary highlighting root causes and suggested fixes."
+
 				message := mcp.PromptMessage{
 					Role: mcp.RoleUser,
 					Content: mcp.TextContent{
 						Type: "text",
-						Text: "You are reviewing Go diagnostics. Provide a concise summary highlighting root causes and suggested fixes.",
+						Text: messageText,
 					},
 				}
 				return &mcp.GetPromptResult{
