@@ -84,9 +84,22 @@ type DocumentFormattingParams struct {
 	Options      FormattingOptions      `json:"options"`
 }
 
+// TextDocumentEdit représente un ensemble de modifications pour un document spécifique.
+type TextDocumentEdit struct {
+	TextDocument OptionalVersionedTextDocumentIdentifier `json:"textDocument"`
+	Edits        []TextEdit                              `json:"edits"`
+}
+
+// OptionalVersionedTextDocumentIdentifier identifie un document texte avec une version optionnelle.
+type OptionalVersionedTextDocumentIdentifier struct {
+	URI     string `json:"uri"`
+	Version *int   `json:"version"`
+}
+
 // WorkspaceEdit représente un ensemble de modifications.
 type WorkspaceEdit struct {
-	Changes map[string][]TextEdit `json:"changes,omitempty"`
+	Changes         map[string][]TextEdit `json:"changes,omitempty"`
+	DocumentChanges []TextDocumentEdit    `json:"documentChanges,omitempty"`
 }
 
 // RenameParams paramètres pour textDocument/rename.
