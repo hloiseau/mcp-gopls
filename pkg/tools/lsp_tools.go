@@ -76,31 +76,6 @@ func (t *LSPTools) Register(s *server.MCPServer) {
 	t.registerWorkspaceTools(s)
 }
 
-func convertPathToURI(path string) string {
-	if !filepath.IsAbs(path) {
-		cwd, err := os.Getwd()
-		if err == nil {
-			path = filepath.Join(cwd, path)
-		}
-	}
-
-	path = filepath.Clean(path)
-
-	if !strings.HasPrefix(path, "file://") {
-		if filepath.Separator == '\\' {
-			path = strings.ReplaceAll(path, "\\", "/")
-			if len(path) >= 2 && path[1] == ':' {
-				drive := strings.ToLower(string(path[0]))
-				path = "/" + drive + ":" + path[2:]
-			}
-			path = "/" + strings.TrimPrefix(path, "/")
-		}
-		path = "file://" + path
-	}
-
-	return path
-}
-
 func getArguments(request mcp.CallToolRequest) (map[string]any, error) {
 	args := request.GetArguments()
 	if args == nil {

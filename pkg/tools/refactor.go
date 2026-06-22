@@ -3,10 +3,11 @@ package tools
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
+
+	"github.com/hloiseau/mcp-gopls/v2/pkg/lsp/protocol"
 )
 
 func (t *LSPTools) registerRefactorTools(s *server.MCPServer) {
@@ -37,9 +38,7 @@ func (t *LSPTools) registerFormatDocument(s *server.MCPServer) {
 			return nil, err
 		}
 
-		if !strings.HasPrefix(fileURI, "file://") {
-			fileURI = convertPathToURI(fileURI)
-		}
+		fileURI = protocol.NormalizeFileURI(fileURI)
 
 		lspClient := t.getClient()
 		if lspClient == nil {
@@ -102,9 +101,7 @@ func (t *LSPTools) registerRenameSymbol(s *server.MCPServer) {
 			return nil, err
 		}
 
-		if !strings.HasPrefix(fileURI, "file://") {
-			fileURI = convertPathToURI(fileURI)
-		}
+		fileURI = protocol.NormalizeFileURI(fileURI)
 
 		lspClient := t.getClient()
 		if lspClient == nil {
@@ -160,9 +157,7 @@ func (t *LSPTools) registerCodeActionsTool(s *server.MCPServer) {
 			return nil, err
 		}
 
-		if !strings.HasPrefix(fileURI, "file://") {
-			fileURI = convertPathToURI(fileURI)
-		}
+		fileURI = protocol.NormalizeFileURI(fileURI)
 
 		lspClient := t.getClient()
 		if lspClient == nil {

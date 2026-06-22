@@ -258,7 +258,6 @@ func (f *fakeLSPClient) CodeActions(ctx context.Context, uri string, rng protoco
 func (f *fakeLSPClient) WorkspaceSymbols(ctx context.Context, query string) ([]protocol.SymbolInformation, error) {
 	return f.symbols, nil
 }
-func (f *fakeLSPClient) OnDiagnostics(handler client.DiagnosticsHandler) func() { return func() {} }
 func (f *fakeLSPClient) NotifyDidChangeWatchedFiles(_ context.Context, _ []protocol.FileEvent) error {
 	return nil
 }

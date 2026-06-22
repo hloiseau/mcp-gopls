@@ -142,7 +142,7 @@ func (w *Watcher) eventLoop(ctx context.Context, fsWatcher *fsnotify.Watcher) {
 				continue
 			}
 
-			uri := pathToURI(event.Name)
+			uri := protocol.PathToURI(event.Name)
 
 			mu.Lock()
 			// Preserve Created over Changed: if a file was just created, do not
@@ -193,17 +193,4 @@ func toFileChangeType(op fsnotify.Op) protocol.FileChangeType {
 	default:
 		return 0
 	}
-}
-
-// pathToURI converts an absolute filesystem path to an LSP file:// URI.
-func pathToURI(path string) string {
-	abs, err := filepath.Abs(path)
-	if err != nil {
-		abs = path
-	}
-	abs = filepath.ToSlash(abs)
-	if !strings.HasPrefix(abs, "/") {
-		abs = "/" + abs
-	}
-	return "file://" + abs
 }
