@@ -65,6 +65,74 @@ func TestNavigationAndRefactorHelpers(t *testing.T) {
 			},
 		},
 		{
+			name:         "type_definition",
+			expectMethod: "textDocument/typeDefinition",
+			call: func(c *GoplsClient) (any, error) {
+				return c.GoToTypeDefinition(context.Background(), uri, 1, 2)
+			},
+			response: []protocol.Location{{URI: uri}},
+			checkParams: func(t *testing.T, params any) {
+				t.Helper()
+				p, ok := params.(protocol.TextDocumentPositionParams)
+				if !ok || p.TextDocument.URI != uri || p.Position.Line != 1 {
+					t.Fatalf("unexpected params %#v", params)
+				}
+			},
+			verify: func(t *testing.T, result any) {
+				t.Helper()
+				locs := result.([]protocol.Location)
+				if len(locs) != 1 || locs[0].URI != uri {
+					t.Fatalf("unexpected locations %#v", locs)
+				}
+			},
+		},
+		{
+			name:         "implementation",
+			expectMethod: "textDocument/implementation",
+			call: func(c *GoplsClient) (any, error) {
+				return c.GoToImplementation(context.Background(), uri, 1, 2)
+			},
+			response: []protocol.Location{{URI: uri}},
+			checkParams: func(t *testing.T, params any) {
+				t.Helper()
+				p, ok := params.(protocol.TextDocumentPositionParams)
+				if !ok || p.TextDocument.URI != uri || p.Position.Line != 1 {
+					t.Fatalf("unexpected params %#v", params)
+				}
+			},
+			verify: func(t *testing.T, result any) {
+				t.Helper()
+				locs := result.([]protocol.Location)
+				if len(locs) != 1 || locs[0].URI != uri {
+					t.Fatalf("unexpected locations %#v", locs)
+				}
+			},
+		},
+		{
+			name:         "document_symbols",
+			expectMethod: "textDocument/documentSymbol",
+			call: func(c *GoplsClient) (any, error) {
+				return c.DocumentSymbols(context.Background(), uri)
+			},
+			response: []protocol.DocumentSymbol{{Name: "main", Kind: protocol.SymbolKindFunction}},
+			checkParams: func(t *testing.T, params any) {
+				t.Helper()
+				p, ok := params.(struct {
+					TextDocument protocol.TextDocumentIdentifier `json:"textDocument"`
+				})
+				if !ok || p.TextDocument.URI != uri {
+					t.Fatalf("unexpected document symbol params %#v", params)
+				}
+			},
+			verify: func(t *testing.T, result any) {
+				t.Helper()
+				syms := result.([]protocol.DocumentSymbol)
+				if len(syms) != 1 || syms[0].Name != "main" {
+					t.Fatalf("unexpected symbols %#v", syms)
+				}
+			},
+		},
+		{
 			name:         "hover",
 			expectMethod: "textDocument/hover",
 			call: func(c *GoplsClient) (any, error) {

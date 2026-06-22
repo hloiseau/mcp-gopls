@@ -232,8 +232,17 @@ func (f *fakeLSPClient) Close(ctx context.Context) error      { return nil }
 func (f *fakeLSPClient) GoToDefinition(ctx context.Context, uri string, line, character int) ([]protocol.Location, error) {
 	return f.definitions, nil
 }
+func (f *fakeLSPClient) GoToTypeDefinition(ctx context.Context, uri string, line, character int) ([]protocol.Location, error) {
+	return nil, nil
+}
+func (f *fakeLSPClient) GoToImplementation(ctx context.Context, uri string, line, character int) ([]protocol.Location, error) {
+	return nil, nil
+}
 func (f *fakeLSPClient) FindReferences(ctx context.Context, uri string, line, character int, includeDeclaration bool) ([]protocol.Location, error) {
 	return f.references, nil
+}
+func (f *fakeLSPClient) DocumentSymbols(ctx context.Context, uri string) ([]protocol.DocumentSymbol, error) {
+	return nil, nil
 }
 func (f *fakeLSPClient) GetDiagnostics(ctx context.Context, uri string) ([]protocol.Diagnostic, error) {
 	return f.diagnostics, nil

@@ -12,6 +12,9 @@ import (
 func (t *LSPTools) registerNavigationTools(s *server.MCPServer) {
 	t.registerGoToDefinition(s)
 	t.registerFindReferences(s)
+	t.registerGoToTypeDefinition(s)
+	t.registerGoToImplementation(s)
+	t.registerDocumentSymbols(s)
 }
 
 func (t *LSPTools) registerGoToDefinition(s *server.MCPServer) {
