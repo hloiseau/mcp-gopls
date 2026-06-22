@@ -11,7 +11,7 @@ COPY . .
 RUN go build -o /usr/local/bin/mcp-gopls ./cmd/mcp-gopls \
   && go install golang.org/x/tools/gopls@latest
 
-ENV MCP_GOPLS_GOPLS_PATH=/go/bin/gopls
+ENV MCP_GOPLS_BIN=/go/bin/gopls
 
 WORKDIR /workspace
 ENTRYPOINT ["mcp-gopls"]

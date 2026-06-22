@@ -205,7 +205,7 @@ func setupLogger(cfg Config) (*os.File, *slog.Logger, error) {
 func setupServer(logger *slog.Logger) *mcpsrv.MCPServer {
 	srv := mcpsrv.NewMCPServer(
 		"MCP LSP Go",
-		"2.0.0",
+		"2.1.0",
 		mcpsrv.WithLogging(),
 		mcpsrv.WithToolCapabilities(true),
 		mcpsrv.WithResourceCapabilities(true, true),
