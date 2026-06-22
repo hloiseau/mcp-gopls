@@ -38,4 +38,8 @@ type LSPClient interface {
 
 	// Observability
 	OnDiagnostics(handler DiagnosticsHandler) func()
+
+	// NotifyDidChangeWatchedFiles signals gopls that files changed on disk,
+	// prompting it to invalidate its index for those paths.
+	NotifyDidChangeWatchedFiles(ctx context.Context, changes []protocol.FileEvent) error
 }

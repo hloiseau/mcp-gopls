@@ -259,3 +259,6 @@ func (f *fakeLSPClient) WorkspaceSymbols(ctx context.Context, query string) ([]p
 	return f.symbols, nil
 }
 func (f *fakeLSPClient) OnDiagnostics(handler client.DiagnosticsHandler) func() { return func() {} }
+func (f *fakeLSPClient) NotifyDidChangeWatchedFiles(_ context.Context, _ []protocol.FileEvent) error {
+	return nil
+}

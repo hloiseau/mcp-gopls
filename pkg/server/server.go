@@ -12,6 +12,7 @@ import (
 
 	mcpsrv "github.com/mark3labs/mcp-go/server"
 
+	"github.com/hloiseau/mcp-gopls/v2/pkg/fs"
 	"github.com/hloiseau/mcp-gopls/v2/pkg/lsp/client"
 	"github.com/hloiseau/mcp-gopls/v2/pkg/tools"
 )
@@ -57,6 +58,10 @@ type Service struct {
 
 	lspClient   client.LSPClient
 	clientMutex sync.RWMutex
+
+	// fsWatcher watches the workspace filesystem and notifies gopls on changes.
+	// Nil when FSWatch is disabled in config.
+	fsWatcher *fs.Watcher
 }
 
 func (s *Service) initLSPClient(ctx context.Context) error {
@@ -138,6 +143,11 @@ func (s *Service) Start(ctx context.Context) error {
 		ctx = context.Background()
 	}
 
+	// Start filesystem watcher if enabled in config.
+	if s.fsWatcher != nil {
+		go s.fsWatcher.Run(ctx)
+	}
+
 	s.RegisterTools()
 
 	stdioServer := newStdioServer(s.server)
@@ -170,7 +180,7 @@ func (s *Service) cleanup(ctx context.Context) {
 }
 
 func setupLogger(cfg Config) (*os.File, *slog.Logger, error) {
-	var writer io.Writer = os.Stdout
+	var writer io.Writer = os.Stderr
 	var file *os.File
 	if cfg.LogFile != "" {
 		logFile, err := os.OpenFile(cfg.LogFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)

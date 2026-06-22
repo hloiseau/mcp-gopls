@@ -64,6 +64,7 @@ func buildConfigFromFlags() (server.Config, error) {
 		flagLogJSON         = flag.Bool("log-json", envBool("MCP_GOPLS_LOG_JSON"), "Emit JSON logs")
 		flagRPCTimeout      = flag.Duration("rpc-timeout", envDuration("MCP_GOPLS_RPC_TIMEOUT", 45*time.Second), "LSP RPC timeout")
 		flagShutdownTimeout = flag.Duration("shutdown-timeout", envDuration("MCP_GOPLS_SHUTDOWN_TIMEOUT", 15*time.Second), "Graceful shutdown timeout")
+		flagFSWatch         = flag.Bool("fs-watch", envBool("MCP_GOPLS_FS_WATCH"), "Watch workspace filesystem and notify gopls on .go/go.mod/go.sum changes (env: MCP_GOPLS_FS_WATCH)")
 	)
 	flag.Parse()
 
@@ -91,6 +92,7 @@ func buildConfigFromFlags() (server.Config, error) {
 	if flagShutdownTimeout != nil {
 		cfg.ShutdownTimeout = *flagShutdownTimeout
 	}
+	cfg.FSWatch = *flagFSWatch
 
 	level, err := parseLogLevel(*flagLogLevel)
 	if err != nil {

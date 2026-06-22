@@ -858,6 +858,16 @@ func (c *GoplsClient) WorkspaceSymbols(ctx context.Context, query string) ([]pro
 	return symbols, nil
 }
 
+// NotifyDidChangeWatchedFiles sends a workspace/didChangeWatchedFiles notification
+// to gopls, causing it to invalidate its cache and re-index the changed files.
+func (c *GoplsClient) NotifyDidChangeWatchedFiles(_ context.Context, changes []protocol.FileEvent) error {
+	if len(changes) == 0 {
+		return nil
+	}
+	params := protocol.DidChangeWatchedFilesParams{Changes: changes}
+	return c.notify("workspace/didChangeWatchedFiles", params)
+}
+
 // OnDiagnostics registers a handler for publishDiagnostics notifications.
 func (c *GoplsClient) OnDiagnostics(handler DiagnosticsHandler) func() {
 	if handler == nil {
