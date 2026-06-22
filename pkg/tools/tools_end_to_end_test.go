@@ -22,7 +22,7 @@ func TestToolsEndToEnd(t *testing.T) {
 		references:  []protocol.Location{{URI: "file://tmp/main.go"}},
 		diagnostics: []protocol.Diagnostic{{Message: "boom"}},
 		hover:       "hover info",
-		completions: []string{"CompleteMe"},
+		completions: []protocol.CompletionItem{{Label: "CompleteMe"}},
 		edits:       []protocol.TextEdit{{NewText: "fmt"}},
 		rename:      &protocol.WorkspaceEdit{Changes: map[string][]protocol.TextEdit{"file://tmp/main.go": {{NewText: "name"}}}},
 		actions:     []protocol.CodeAction{{Title: "Fix"}},
@@ -114,8 +114,13 @@ func TestToolsEndToEnd(t *testing.T) {
 		"file_uri": "file://tmp/main.go",
 		"position": map[string]any{"line": 0, "character": 0},
 	}, func(t *testing.T, content map[string]any) {
-		if len(content["completions"].([]any)) != 1 {
+		items := content["completions"].([]any)
+		if len(items) != 1 {
 			t.Fatalf("unexpected completions %#v", content)
+		}
+		first, ok := items[0].(map[string]any)
+		if !ok || first["label"] != "CompleteMe" {
+			t.Fatalf("unexpected completion item %#v", items[0])
 		}
 	})
 
@@ -219,7 +224,7 @@ type fakeLSPClient struct {
 	references  []protocol.Location
 	diagnostics []protocol.Diagnostic
 	hover       string
-	completions []string
+	completions []protocol.CompletionItem
 	edits       []protocol.TextEdit
 	rename      *protocol.WorkspaceEdit
 	actions     []protocol.CodeAction
@@ -243,7 +248,7 @@ func (f *fakeLSPClient) DidClose(ctx context.Context, uri string) error         
 func (f *fakeLSPClient) GetHover(ctx context.Context, uri string, line, character int) (string, error) {
 	return f.hover, nil
 }
-func (f *fakeLSPClient) GetCompletion(ctx context.Context, uri string, line, character int) ([]string, error) {
+func (f *fakeLSPClient) GetCompletion(ctx context.Context, uri string, line, character int) ([]protocol.CompletionItem, error) {
 	return f.completions, nil
 }
 func (f *fakeLSPClient) DocumentFormatting(ctx context.Context, uri string) ([]protocol.TextEdit, error) {

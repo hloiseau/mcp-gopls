@@ -92,7 +92,13 @@ func TestNavigationAndRefactorHelpers(t *testing.T) {
 			},
 			response: map[string]any{
 				"items": []any{
-					map[string]any{"label": "Foo"},
+					map[string]any{
+						"label":         "Foo",
+						"detail":        "func()",
+						"documentation": map[string]any{"value": "Foo docs"},
+						"kind":          3.0,
+						"insertText":    "Foo()",
+					},
 				},
 			},
 			checkParams: func(t *testing.T, params any) {
@@ -103,9 +109,13 @@ func TestNavigationAndRefactorHelpers(t *testing.T) {
 			},
 			verify: func(t *testing.T, result any) {
 				t.Helper()
-				items := result.([]string)
-				if len(items) != 1 || items[0] != "Foo" {
+				items := result.([]protocol.CompletionItem)
+				if len(items) != 1 {
 					t.Fatalf("unexpected completion %#v", items)
+				}
+				item := items[0]
+				if item.Label != "Foo" || item.Detail != "func()" || item.Documentation != "Foo docs" || item.Kind != 3 || item.InsertText != "Foo()" {
+					t.Fatalf("unexpected completion item %#v", item)
 				}
 			},
 		},
