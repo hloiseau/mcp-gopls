@@ -73,8 +73,8 @@ func getEnvValue(env []string, key string) string {
 func findEnv(env []string, key string) (string, bool) {
 	prefix := key + "="
 	for _, kv := range env {
-		if strings.HasPrefix(kv, prefix) {
-			return strings.TrimPrefix(kv, prefix), true
+		if after, ok := strings.CutPrefix(kv, prefix); ok {
+			return after, true
 		}
 	}
 	return "", false
