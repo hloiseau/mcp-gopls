@@ -30,7 +30,16 @@ func (s *stubLSPClient) Close(ctx context.Context) error      { return s.closeEr
 func (s *stubLSPClient) GoToDefinition(ctx context.Context, uri string, line, character int) ([]protocol.Location, error) {
 	return nil, nil
 }
+func (s *stubLSPClient) GoToTypeDefinition(ctx context.Context, uri string, line, character int) ([]protocol.Location, error) {
+	return nil, nil
+}
+func (s *stubLSPClient) GoToImplementation(ctx context.Context, uri string, line, character int) ([]protocol.Location, error) {
+	return nil, nil
+}
 func (s *stubLSPClient) FindReferences(ctx context.Context, uri string, line, character int, includeDeclaration bool) ([]protocol.Location, error) {
+	return nil, nil
+}
+func (s *stubLSPClient) DocumentSymbols(ctx context.Context, uri string) ([]protocol.DocumentSymbol, error) {
 	return nil, nil
 }
 func (s *stubLSPClient) GetDiagnostics(ctx context.Context, uri string) ([]protocol.Diagnostic, error) {

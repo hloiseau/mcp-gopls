@@ -525,6 +525,50 @@ func (c *GoplsClient) GoToDefinition(ctx context.Context, uri string, line, char
 	return locations, nil
 }
 
+// GoToTypeDefinition implements LSPClient.
+func (c *GoplsClient) GoToTypeDefinition(ctx context.Context, uri string, line, character int) ([]protocol.Location, error) {
+	params := protocol.TextDocumentPositionParams{
+		TextDocument: protocol.TextDocumentIdentifier{URI: uri},
+		Position: protocol.Position{
+			Line:      line,
+			Character: character,
+		},
+	}
+
+	resp, err := c.invoke(ctx, "textDocument/typeDefinition", params)
+	if err != nil {
+		return nil, err
+	}
+
+	var locations []protocol.Location
+	if err := resp.ParseResult(&locations); err != nil {
+		return nil, fmt.Errorf("decode type definition: %w", err)
+	}
+	return locations, nil
+}
+
+// GoToImplementation implements LSPClient.
+func (c *GoplsClient) GoToImplementation(ctx context.Context, uri string, line, character int) ([]protocol.Location, error) {
+	params := protocol.TextDocumentPositionParams{
+		TextDocument: protocol.TextDocumentIdentifier{URI: uri},
+		Position: protocol.Position{
+			Line:      line,
+			Character: character,
+		},
+	}
+
+	resp, err := c.invoke(ctx, "textDocument/implementation", params)
+	if err != nil {
+		return nil, err
+	}
+
+	var locations []protocol.Location
+	if err := resp.ParseResult(&locations); err != nil {
+		return nil, fmt.Errorf("decode implementation: %w", err)
+	}
+	return locations, nil
+}
+
 // FindReferences implements LSPClient.
 func (c *GoplsClient) FindReferences(ctx context.Context, uri string, line, character int, includeDeclaration bool) ([]protocol.Location, error) {
 	params := protocol.ReferenceParams{
@@ -550,6 +594,36 @@ func (c *GoplsClient) FindReferences(ctx context.Context, uri string, line, char
 		return nil, fmt.Errorf("decode references: %w", err)
 	}
 	return locations, nil
+}
+
+// DocumentSymbols implements LSPClient.
+func (c *GoplsClient) DocumentSymbols(ctx context.Context, uri string) ([]protocol.DocumentSymbol, error) {
+	opened, err := c.ensureDocumentOpen(uri, "go", "")
+	if err != nil {
+		return nil, err
+	}
+	if opened {
+		defer func() {
+			_ = c.DidClose(ctx, uri)
+		}()
+	}
+
+	params := struct {
+		TextDocument protocol.TextDocumentIdentifier `json:"textDocument"`
+	}{
+		TextDocument: protocol.TextDocumentIdentifier{URI: uri},
+	}
+
+	resp, err := c.invoke(ctx, "textDocument/documentSymbol", params)
+	if err != nil {
+		return nil, err
+	}
+
+	var symbols []protocol.DocumentSymbol
+	if err := resp.ParseResult(&symbols); err != nil {
+		return nil, fmt.Errorf("decode document symbols: %w", err)
+	}
+	return symbols, nil
 }
 
 func (c *GoplsClient) waitForDiagnostics(ctx context.Context, uri string) error {

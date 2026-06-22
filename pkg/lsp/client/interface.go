@@ -18,7 +18,10 @@ type LSPClient interface {
 
 	// Méthodes de navigation de code
 	GoToDefinition(ctx context.Context, uri string, line, character int) ([]protocol.Location, error)
+	GoToTypeDefinition(ctx context.Context, uri string, line, character int) ([]protocol.Location, error)
+	GoToImplementation(ctx context.Context, uri string, line, character int) ([]protocol.Location, error)
 	FindReferences(ctx context.Context, uri string, line, character int, includeDeclaration bool) ([]protocol.Location, error)
+	DocumentSymbols(ctx context.Context, uri string) ([]protocol.DocumentSymbol, error)
 
 	// Méthodes de diagnostic
 	GetDiagnostics(ctx context.Context, uri string) ([]protocol.Diagnostic, error)

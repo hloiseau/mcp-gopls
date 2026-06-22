@@ -167,3 +167,39 @@ type DidChangeWatchedFilesParams struct {
 	// Changes is the list of file change events.
 	Changes []FileEvent `json:"changes"`
 }
+
+// SymbolKind represents the kind of a symbol (LSP spec 3.17).
+type SymbolKind int
+
+const (
+	SymbolKindFile         SymbolKind = 1
+	SymbolKindModule       SymbolKind = 2
+	SymbolKindNamespace    SymbolKind = 3
+	SymbolKindPackage      SymbolKind = 4
+	SymbolKindClass        SymbolKind = 5
+	SymbolKindMethod       SymbolKind = 6
+	SymbolKindProperty     SymbolKind = 7
+	SymbolKindField        SymbolKind = 8
+	SymbolKindConstructor  SymbolKind = 9
+	SymbolKindEnum         SymbolKind = 10
+	SymbolKindInterface    SymbolKind = 11
+	SymbolKindFunction     SymbolKind = 12
+	SymbolKindVariable     SymbolKind = 13
+	SymbolKindConstant     SymbolKind = 14
+	SymbolKindString       SymbolKind = 15
+	SymbolKindNumber       SymbolKind = 16
+	SymbolKindBoolean      SymbolKind = 17
+	SymbolKindArray        SymbolKind = 18
+	SymbolKindObject       SymbolKind = 19
+	SymbolKindStruct       SymbolKind = 23
+)
+
+// DocumentSymbol represents a symbol in a document with optional children.
+type DocumentSymbol struct {
+	Name           string           `json:"name"`
+	Detail         string           `json:"detail,omitempty"`
+	Kind           SymbolKind       `json:"kind"`
+	Range          Range            `json:"range"`
+	SelectionRange Range            `json:"selectionRange"`
+	Children       []DocumentSymbol `json:"children,omitempty"`
+}
