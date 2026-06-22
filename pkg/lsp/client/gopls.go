@@ -83,6 +83,7 @@ type GoplsClient struct {
 	nextID      atomic.Int64
 	closed      atomic.Bool
 	initialized atomic.Bool
+	shutDown    atomic.Bool
 
 	diagnosticsMu       sync.RWMutex
 	diagnosticsCache    map[string][]protocol.Diagnostic
@@ -453,6 +454,7 @@ func (c *GoplsClient) Shutdown(ctx context.Context) error {
 	if _, err := c.call(ctx, "shutdown", nil); err != nil {
 		return fmt.Errorf("shutdown gopls: %w", err)
 	}
+	c.shutDown.Store(true)
 	return nil
 }
 
@@ -465,6 +467,18 @@ func (c *GoplsClient) Close(ctx context.Context) error {
 	var errs []error
 
 	c.closeOnce.Do(func() {
+		if c.initialized.Load() {
+			if !c.shutDown.Load() {
+				if err := c.Shutdown(ctx); err != nil {
+					errs = append(errs, err)
+				}
+			}
+			if err := c.notify("exit", map[string]any{}); err != nil {
+				errs = append(errs, err)
+			}
+			c.initialized.Store(false)
+		}
+
 		c.closed.Store(true)
 
 		if c.readerCancel != nil {
@@ -472,16 +486,6 @@ func (c *GoplsClient) Close(ctx context.Context) error {
 		}
 		if c.readerDone != nil {
 			<-c.readerDone
-		}
-
-		if c.initialized.Load() {
-			if err := c.Shutdown(ctx); err != nil {
-				errs = append(errs, err)
-			}
-			if err := c.notify("exit", map[string]any{}); err != nil {
-				errs = append(errs, err)
-			}
-			c.initialized.Store(false)
 		}
 
 		if c.transport != nil {
