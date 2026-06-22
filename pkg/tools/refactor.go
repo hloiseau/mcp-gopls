@@ -13,6 +13,7 @@ func (t *LSPTools) registerRefactorTools(s *server.MCPServer) {
 	t.registerFormatDocument(s)
 	t.registerRenameSymbol(s)
 	t.registerCodeActionsTool(s)
+	t.registerApplyWorkspaceEdit(s)
 }
 
 func (t *LSPTools) registerFormatDocument(s *server.MCPServer) {
